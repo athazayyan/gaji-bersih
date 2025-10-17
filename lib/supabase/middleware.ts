@@ -41,34 +41,16 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protect routes that require authentication
-  // Allow public access to auth routes and API endpoints
+  // Allow public access to auth routes and all API endpoints (they handle their own auth)
   if (
     !user &&
+    !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api/auth") &&
-    request.nextUrl.pathname !== "/"
+    !request.nextUrl.pathname.startsWith("/api/")
   ) {
-    // No user, redirect to auth
+    // No user, redirect to login
     const url = request.nextUrl.clone();
-    url.pathname = "/auth";
-    return NextResponse.redirect(url);
-  }
-
-  // If user is not authenticated and accessing root, redirect to auth
-  if (!user && request.nextUrl.pathname === "/") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth";
-    return NextResponse.redirect(url);
-  }
-
-  // If user is authenticated and accessing auth page or root, redirect to home
-  if (
-    user &&
-    (request.nextUrl.pathname.startsWith("/auth") ||
-      request.nextUrl.pathname === "/")
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/home";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 

@@ -156,6 +156,11 @@ a:hover {
   color: var(--gradient-hijau);
 }
 
+.bg-gradient-hijaumuda{
+  background: linear-gradient(180deg, #537D5D -2.01%, #0A1D29 100%);
+}
+
+
 /* Custom Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 6px;

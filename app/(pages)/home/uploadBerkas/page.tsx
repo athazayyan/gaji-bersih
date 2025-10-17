@@ -21,21 +21,10 @@ export default function UploadBerkasPage() {
   const generatePreview = (file: File) => {
     setIsPreviewLoading(true);
 
-    if (file.type.startsWith("image/")) {
-      // For images, create object URL
-      const imageUrl = URL.createObjectURL(file);
-      setFilePreview(imageUrl);
-      setIsPreviewLoading(false);
-    } else if (file.type === "application/pdf") {
-      // For PDFs, we'll use object URL and display in iframe
-      const pdfUrl = URL.createObjectURL(file);
-      setFilePreview(pdfUrl);
-      setIsPreviewLoading(false);
-    } else {
-      // For other document types, show document info
-      setFilePreview(null);
-      setIsPreviewLoading(false);
-    }
+    // Create object URL for all file types
+    const fileUrl = URL.createObjectURL(file);
+    setFilePreview(fileUrl);
+    setIsPreviewLoading(false);
   };
 
   const getFileType = (file: File) => {
@@ -81,9 +70,16 @@ export default function UploadBerkasPage() {
 
   const handleAnalysis = () => {
     if (selectedFile) {
-      // Navigate to analysis page or show analysis results
+      // Save file preview to localStorage for scanning page (if available)
+      if (filePreview) {
+        localStorage.setItem("uploadedFile", filePreview);
+      }
+      localStorage.setItem("uploadedFileType", getFileType(selectedFile));
+      localStorage.setItem("uploadedFileName", selectedFile.name);
+
+      // Navigate to scanning page
       console.log("Starting analysis for:", selectedFile.name);
-      // router.push("/analysis");
+      router.push("/home/scanning");
     }
   };
 

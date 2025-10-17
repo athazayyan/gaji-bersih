@@ -39,6 +39,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      analyses: {
+        Row: {
+          all_references: Json
+          analysis_type: string
+          chat_id: string
+          completion_tokens: number | null
+          created_at: string
+          document_id: string
+          id: string
+          issues: Json
+          model_used: string | null
+          processing_time_ms: number | null
+          prompt_tokens: number | null
+          salary_calculation: Json | null
+          summary: Json
+          tokens_used: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          all_references: Json
+          analysis_type: string
+          chat_id: string
+          completion_tokens?: number | null
+          created_at?: string
+          document_id: string
+          id?: string
+          issues: Json
+          model_used?: string | null
+          processing_time_ms?: number | null
+          prompt_tokens?: number | null
+          salary_calculation?: Json | null
+          summary: Json
+          tokens_used?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          all_references?: Json
+          analysis_type?: string
+          chat_id?: string
+          completion_tokens?: number | null
+          created_at?: string
+          document_id?: string
+          id?: string
+          issues?: Json
+          model_used?: string | null
+          processing_time_ms?: number | null
+          prompt_tokens?: number | null
+          salary_calculation?: Json | null
+          summary?: Json
+          tokens_used?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analyses_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["chat_id"]
+          },
+          {
+            foreignKeyName: "analyses_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: true
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           chat_id: string | null

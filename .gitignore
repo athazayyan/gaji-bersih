@@ -40,12 +40,23 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# project documentation (internal)
 project-brief.txt
 CLAUDE.md
 file-search-and-retrieval.md
 web-search.txt
+structured-model-outputs.md
+main-api-prd.md
+
+# test results and credentials
 AUTH-API-TEST-RESULTS.md
+TEST-RESULTS.md
 cookies.txt
 .test-credentials
+.test-*.json
+
+# test scripts (keep only final e2e)
 test-admin-delete-regulation.sh
 test-delete-vectorstore.sh
+test-analyze-chat-flow.sh
+test-full-suite.sh

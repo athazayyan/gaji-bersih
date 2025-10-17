@@ -136,3 +136,219 @@ export interface WebSearchTool {
     timezone?: string
   }
 }
+
+// ============================================================================
+// Analysis Types (for POST /api/analyze)
+// ============================================================================
+
+export type AnalysisType = 'contract' | 'payslip' | 'nda' | 'policy'
+export type IssuePriority = 'critical' | 'important' | 'optional'
+export type ComplianceStatus = 'compliant' | 'potentially_non_compliant' | 'non_compliant' | 'unclear'
+
+/**
+ * Reference from stored regulation
+ */
+export interface StoredRegulationReference {
+  type: 'stored_regulation'
+  source_id: string
+  title: string
+  article?: string
+  excerpt: string
+  file_id: string
+  relevance_score: number
+}
+
+/**
+ * Reference from web search
+ */
+export interface WebSearchReference {
+  type: 'web_search'
+  title: string
+  url: string
+  snippet: string
+  published_date?: string
+  domain: string
+  relevance_score: number
+}
+
+/**
+ * Single issue identified in document analysis
+ */
+export interface AnalysisIssue {
+  id: string
+  priority: IssuePriority
+  category: string
+  title: string
+  question: string
+  contract_excerpt: string
+  ai_explanation: string
+  references: Array<StoredRegulationReference | WebSearchReference>
+  compliance_status: ComplianceStatus
+  compliance_details: string
+  recommendation: string
+  severity_score: number
+}
+
+/**
+ * Salary calculation breakdown (for payslips)
+ */
+export interface SalaryCalculation {
+  gross_salary: number
+  deductions: {
+    bpjs_kesehatan: number
+    bpjs_ketenagakerjaan: number
+    pph21: number
+    other_deductions: number
+    total_deductions: number
+  }
+  allowances: {
+    [key: string]: number // Dynamic allowance types
+    total_allowances: number
+  }
+  total_income: number       // gross + allowances
+  take_home_pay: number      // total_income - deductions
+  calculation_breakdown: {
+    formula: string
+    details: string
+  }
+}
+
+/**
+ * Summary statistics for analysis
+ */
+export interface AnalysisSummary {
+  total_issues: number
+  critical: number
+  important: number
+  optional: number
+}
+
+/**
+ * Aggregated references section
+ */
+export interface AllReferences {
+  stored_regulations: Array<{
+    id: string
+    title: string
+    regulation_type: string
+    regulation_number: string
+    category: string
+    file_id: string
+    used_in_issues: string[]
+  }>
+  web_sources: Array<{
+    title: string
+    url: string
+    domain: string
+    published_date?: string
+    used_in_issues: string[]
+  }>
+  total_stored_regulations: number
+  total_web_sources: number
+}
+
+/**
+ * Complete analysis result (matching PRD response schema)
+ */
+export interface AnalysisResult {
+  analysis_id: string
+  chat_id: string
+  document: {
+    id: string
+    name: string
+    type: string
+    uploaded_at: string
+  }
+  summary: AnalysisSummary
+  salary_calculation?: SalaryCalculation
+  issues: AnalysisIssue[]
+  all_references: AllReferences
+  metadata: {
+    analyzed_at: string
+    model_used: string
+    search_methods_used: string[]
+    tokens_used: {
+      prompt_tokens: number
+      completion_tokens: number
+      total_tokens: number
+    }
+    processing_time_ms: number
+  }
+}
+
+// ============================================================================
+// Chat Types (for POST /api/chat)
+// ============================================================================
+
+/**
+ * Contract citation in chat response
+ */
+export interface ContractCitation {
+  document_id: string
+  document_name: string
+  document_type: string
+  page?: number
+  excerpt: string
+  relevance_score: number
+}
+
+/**
+ * Regulation citation in chat response
+ */
+export interface RegulationCitation {
+  regulation_id: string
+  title: string
+  regulation_type: string
+  regulation_number: string
+  article?: string
+  excerpt: string
+  file_id: string
+  relevance_score: number
+}
+
+/**
+ * Web citation in chat response
+ */
+export interface WebCitation {
+  title: string
+  url: string
+  domain: string
+  snippet: string
+  published_date?: string
+  relevance_score: number
+}
+
+/**
+ * Multi-source citations for chat response
+ */
+export interface ChatSourceCitations {
+  contract_citations: ContractCitation[]
+  regulation_citations: RegulationCitation[]
+  web_citations: WebCitation[]
+}
+
+/**
+ * Chat response result (matching PRD response schema)
+ */
+export interface ChatResult {
+  message_id: string
+  chat_id: string
+  role: 'assistant'
+  content: string
+  sources: ChatSourceCitations
+  context: {
+    analysis_id?: string
+    previous_messages_count: number
+    user_gross_salary?: number
+  }
+  metadata: {
+    created_at: string
+    model_used: string
+    search_methods_used: string[]
+    tokens_used: {
+      prompt_tokens: number
+      completion_tokens: number
+      total_tokens: number
+    }
+  }
+}

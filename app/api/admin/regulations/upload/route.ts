@@ -147,6 +147,7 @@ export async function POST(request: NextRequest) {
     try {
       // Prepare metadata attributes for OpenAI
       const attributes: any = {
+        doc_type: 'regulation',  // CRITICAL: Allows OR filter to include regulations
         regulation_type: metadata.regulation_type,
         regulation_number: metadata.regulation_number,
         regulation_year: metadata.regulation_year.toString(),

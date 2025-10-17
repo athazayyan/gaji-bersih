@@ -60,3 +60,6 @@ test-admin-delete-regulation.sh
 test-delete-vectorstore.sh
 test-analyze-chat-flow.sh
 test-full-suite.sh
+
+# large regulation files (stored in vector store, not in git)
+public/peraturan-terkait/

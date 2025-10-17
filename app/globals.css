@@ -2,14 +2,14 @@
 
 :root {
   --hijautua: #213813;
-  --hijaumuda: #B0DB9C;
-  --hijaudaun: #537D5D;
-  --hijaubiru: #0A1D29;
-  --hijauterang: #2F9E74;
+  --hijaumuda: #b0db9c;
+  --hijaudaun: #537d5d;
+  --hijaubiru: #0a1d29;
+  --hijauterang: #2f9e74;
 
- 
-  --gradient-hijau: linear-gradient(180deg,  #2F9E74 -2.01%, #0A1D29 100%);
+  --gradient-hijau: linear-gradient(180deg, #2f9e74 -2.01%, #0a1d29 100%);
 
+  --font-poppins: var(--font-poppins);
 }
 
 /* If you use Tailwind's @theme, you can map CSS vars to tokens here. Removed to avoid editor lint errors. */
@@ -53,10 +53,10 @@ a:hover {
   color: var(--hijauterang);
 }
 
-.bg-hijautua{
+.bg-hijautua {
   background-color: var(--hijautua);
 }
-.bg-hijaumuda{
+.bg-hijaumuda {
   background-color: var(--hijaumuda);
 }
 .bg-hijaudaun {
@@ -76,3 +76,20 @@ a:hover {
   color: var(--gradient-hijau);
 }
 
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.7);
+}

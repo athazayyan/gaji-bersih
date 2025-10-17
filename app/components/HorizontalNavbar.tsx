@@ -79,7 +79,7 @@ export default function HorizontalNavbar() {
           {/* Logo/Brand */}
           <div className="flex items-center">
             <Image
-              src="/icon/icon-text.svg"
+              src="/icon/icon-text-color.svg"
               alt="GajiBersih"
               width={150}
               height={40}

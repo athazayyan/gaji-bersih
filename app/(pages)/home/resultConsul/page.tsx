@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AlertCard, { AlertLevel } from "@/app/components/AlertCard";
 import AnalysisDetailCard from "@/app/components/AnalysisDetailCard";
 import GradientCard from "@/app/components/GradientCard";
+import ChatBot from "@/app/components/ChatBot";
 
 // Dummy data - nanti akan diganti dengan data dari backend AI
 const dummyAnalysisData = {
@@ -230,6 +231,20 @@ export default function ConsultPage() {
               </div>
             </div>
           )}
+
+          {/* ChatBot Section */}
+          <div className="mb-6">
+            <h2
+              className="text-hijautua font-semibold mb-3"
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                fontSize: "16px",
+              }}
+            >
+              Tanya AI Assistant
+            </h2>
+            <ChatBot />
+          </div>
 
           {/* Action Cards Section with Title */}
           <div className="mb-6">

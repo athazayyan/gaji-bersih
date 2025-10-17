@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SegmentedControl from "@/app/components/SegmentedControl";
+import SkeletonLoader from "@/app/components/SkeletonLoader";
+import { useToast } from "@/app/components/ToastProvider";
 import { supabase } from "@/lib/supabase/client";
 
 export default function AuthenticationPage() {
   const router = useRouter();
+  const toast = useToast();
   const [selectedTab, setSelectedTab] = useState(0);
 
   const [loginData, setLoginData] = useState({
@@ -85,16 +88,19 @@ export default function AuthenticationPage() {
 
     if (!loginData.email.trim()) {
       setError("Email wajib diisi");
+      toast.error("Email wajib diisi");
       return;
     }
 
     if (!loginData.password) {
       setError("Kata sandi wajib diisi");
+      toast.error("Kata sandi wajib diisi");
       return;
     }
 
     if (!loginData.rememberMe) {
       setError("Anda harus mencentang 'Ingat saya' untuk melanjutkan");
+      toast.warning("Anda harus mencentang 'Ingat saya' untuk melanjutkan");
       return;
     }
 
@@ -112,12 +118,15 @@ export default function AuthenticationPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data?.error || "Gagal masuk. Coba lagi.");
+        toast.error(data?.error || "Gagal masuk. Coba lagi.");
         return;
       }
 
+      toast.success("Login berhasil! Mengalihkan ke halaman utama...");
       router.push("/home");
     } catch (err) {
       setError("Terjadi kesalahan jaringan. Coba lagi.");
+      toast.error("Terjadi kesalahan jaringan. Coba lagi.");
     } finally {
       setLoginLoading(false);
     }
@@ -132,36 +141,43 @@ export default function AuthenticationPage() {
     // Validate required fields
     if (!formData.profilePhoto) {
       setError("Foto profil wajib diupload");
+      toast.error("Foto profil wajib diupload");
       return;
     }
 
     if (!formData.fullName.trim()) {
       setError("Nama lengkap wajib diisi");
+      toast.error("Nama lengkap wajib diisi");
       return;
     }
 
     if (!formData.email.trim()) {
       setError("Email wajib diisi");
+      toast.error("Email wajib diisi");
       return;
     }
 
     if (!formData.password) {
       setError("Kata sandi wajib diisi");
+      toast.error("Kata sandi wajib diisi");
       return;
     }
 
     if (formData.password.length < 6) {
       setError("Kata sandi minimal 6 karakter");
+      toast.error("Kata sandi minimal 6 karakter");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Konfirmasi kata sandi tidak sesuai");
+      toast.error("Konfirmasi kata sandi tidak sesuai");
       return;
     }
 
     if (!agreeTerms) {
       setError("Anda harus menyetujui syarat & kebijakan privasi");
+      toast.warning("Anda harus menyetujui syarat & kebijakan privasi");
       return;
     }
 
@@ -181,6 +197,7 @@ export default function AuthenticationPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data?.error || "Pendaftaran gagal. Coba lagi.");
+        toast.error(data?.error || "Pendaftaran gagal. Coba lagi.");
         return;
       }
 
@@ -210,12 +227,15 @@ export default function AuthenticationPage() {
       }
 
       if (data?.session) {
+        toast.success("Pendaftaran berhasil! Selamat datang di GajiBersih");
         router.push("/home");
       } else {
+        toast.info("Pendaftaran berhasil. Silakan cek email untuk verifikasi.");
         setError("Pendaftaran berhasil. Silakan cek email untuk verifikasi.");
       }
     } catch (err) {
       setError("Terjadi kesalahan jaringan. Coba lagi.");
+      toast.error("Terjadi kesalahan jaringan. Coba lagi.");
     } finally {
       setRegisterLoading(false);
     }
@@ -223,6 +243,14 @@ export default function AuthenticationPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Show Skeleton Loader when loading */}
+      {(loginLoading || registerLoading) && (
+        <SkeletonLoader
+          type="auth"
+          message={loginLoading ? "Memproses Login..." : "Membuat Akun Anda..."}
+        />
+      )}
+
       {/* Mobile Layout */}
       <div className="lg:hidden min-h-screen relative overflow-hidden">
         <div className="absolute inset-0 z-0 bg-gradient-hijau" />
@@ -232,12 +260,19 @@ export default function AuthenticationPage() {
           {/* Header Content */}
           <div className="flex-1 flex flex-col justify-end p-6">
             <div className="text-white text-left">
-              <h1
-                className="text-2xl font-semibold mb-4 mt-5 leading-tight"
-                style={{ fontFamily: "Poppins, sans-serif" }}
-              >
-                Gabung Bersama GajiBersih
-              </h1>
+              <div className="flex items-center gap-3 mb-4 mt-5">
+                <img
+                  src="/icon/icon-notext.svg"
+                  alt="GajiBersih Icon"
+                  className="w-10 h-10"
+                />
+                <h1
+                  className="text-2xl font-semibold leading-tight"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  Gabung Bersama GajiBersih
+                </h1>
+              </div>
               <p
                 className="text-base font-light opacity-90 leading-relaxed"
                 style={{ fontFamily: "Poppins, sans-serif" }}
@@ -471,7 +506,7 @@ export default function AuthenticationPage() {
                   <button
                     type="submit"
                     disabled={loginLoading}
-                    className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijaumuda disabled:opacity-60"
+                    className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijau disabled:opacity-60"
                     style={{
                       borderRadius: "20px",
                       fontFamily: "Poppins, sans-serif",
@@ -544,11 +579,10 @@ export default function AuthenticationPage() {
                         />
                         <label
                           htmlFor="profile-photo"
-                          className="cursor-pointer inline-flex items-center justify-center text-sm font-medium text-white gap-2 w-full"
+                          className="cursor-pointer inline-flex items-center justify-center text-sm font-medium text-white gap-2 w-full bg-gradient-hijau"
                           style={{
                             height: "36px",
                             borderRadius: "30px",
-                            backgroundColor: "#213813",
                           }}
                         >
                           <svg
@@ -834,7 +868,7 @@ export default function AuthenticationPage() {
                   <button
                     type="submit"
                     disabled={registerLoading}
-                    className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijaumuda disabled:opacity-60"
+                    className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijau disabled:opacity-60"
                     style={{
                       borderRadius: "20px",
                       fontFamily: "Poppins, sans-serif",
@@ -1057,7 +1091,7 @@ export default function AuthenticationPage() {
 
                   <button
                     type="submit"
-                    className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijaumuda"
+                    className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijau"
                     style={{
                       borderRadius: "20px",
                       fontFamily: "Poppins, sans-serif",
@@ -1123,11 +1157,10 @@ export default function AuthenticationPage() {
                         />
                         <label
                           htmlFor="profile-photo-desktop"
-                          className="cursor-pointer inline-flex items-center justify-center text-sm font-medium text-white gap-2 w-full"
+                          className="cursor-pointer inline-flex items-center justify-center text-sm font-medium text-white gap-2 w-full bg-gradient-hijau"
                           style={{
                             height: "32px",
                             borderRadius: "30px",
-                            backgroundColor: "#213813",
                           }}
                         >
                           <svg
@@ -1400,7 +1433,7 @@ export default function AuthenticationPage() {
                   <button
                     type="submit"
                     disabled={registerLoading}
-                    className="w-full text-white py-2.5 px-4 hover:opacity-90 transition-colors font-medium mt-4 bg-gradient-hijaumuda disabled:opacity-60"
+                    className="w-full text-white py-2.5 px-4 hover:opacity-90 transition-colors font-medium mt-4 bg-gradient-hijau disabled:opacity-60"
                     style={{
                       borderRadius: "20px",
                       fontFamily: "Poppins, sans-serif",

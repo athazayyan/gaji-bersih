@@ -41,10 +41,12 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protect routes that require authentication
+  // Allow public access to auth routes and API endpoints
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
+    !request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/api/auth')
   ) {
     // No user, redirect to login
     const url = request.nextUrl.clone()

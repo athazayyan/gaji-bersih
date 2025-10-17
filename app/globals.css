@@ -2,7 +2,7 @@
 
 :root {
   --hijautua: #213813;
-  --hijaumuda: #B0DB9C;
+  --hijaumuda: hsl(101, 47%, 74%);
   --hijaudaun: #537D5D;
   --hijaubiru: #0A1D29;
   --hijauterang: #2F9E74;
@@ -75,4 +75,9 @@ a:hover {
 .text-gradient-hijau {
   color: var(--gradient-hijau);
 }
+
+.bg-gradient-hijaumuda{
+  background: linear-gradient(180deg, #537D5D -2.01%, #0A1D29 100%);
+}
+
 

@@ -122,7 +122,7 @@ export default function HomePage() {
           <GradientCard
             title="Cek Berkas"
             buttonText="Cek berkas mu disini"
-            onClick={() => router.push("/scan")}
+            onClick={() => router.push("/home/uploadBerkas")}
             width="100%"
             height="152px"
           />

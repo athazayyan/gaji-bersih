@@ -7,11 +7,12 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { deleteFromVectorStore } from '@/lib/openai/vector-store'
+import { VECTOR_STORES } from '@/lib/openai/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { document_id: string } }
+  { params }: { params: Promise<{ document_id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -26,7 +27,7 @@ export async function GET(
       )
     }
 
-    const { document_id } = params
+    const { document_id } = await params
 
     // Fetch document (RLS ensures user can only access their own documents)
     const { data: document, error: dbError } = await (supabase
@@ -77,7 +78,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { document_id: string } }
+  { params }: { params: Promise<{ document_id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -92,7 +93,7 @@ export async function DELETE(
       )
     }
 
-    const { document_id } = params
+    const { document_id } = await params
 
     // Fetch document first to get metadata
     const { data: document, error: fetchError } = await (supabase
@@ -128,11 +129,14 @@ export async function DELETE(
     // Step 2: Delete from OpenAI Vector Store
     if (document.vs_file_id && document.file_id && document.vector_store) {
       try {
-        const vectorStoreId = document.vector_store === 'big' 
-          ? process.env.OPENAI_VECTOR_STORE_BIG_ID 
-          : process.env.OPENAI_VECTOR_STORE_GLOBAL_ID
+        const vectorStoreId = document.vector_store === 'big'
+          ? VECTOR_STORES.BIG
+          : VECTOR_STORES.GLOBAL
 
-        if (vectorStoreId) {
+        if (!vectorStoreId) {
+          console.error(`[Document DELETE] Vector store ID not found for store: ${document.vector_store}`)
+          console.error('[Document DELETE] Skipping vector store deletion - files will remain orphaned!')
+        } else {
           await deleteFromVectorStore(vectorStoreId, document.vs_file_id, document.file_id)
           console.log(`[Document DELETE] Removed from vector store: ${document.vs_file_id}`)
         }
@@ -140,6 +144,8 @@ export async function DELETE(
         console.error('[Document DELETE] OpenAI deletion error:', openaiError)
         // Continue with database deletion even if OpenAI fails
       }
+    } else {
+      console.log(`[Document DELETE] Skipping vector store deletion - missing metadata (vs_file_id: ${document.vs_file_id}, file_id: ${document.file_id}, vector_store: ${document.vector_store})`)
     }
 
     // Step 3: Delete from database

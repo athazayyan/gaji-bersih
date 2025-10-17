@@ -14,39 +14,37 @@ import type {
 } from './types'
 
 /**
- * Build attribute filter for user isolation
+ * Build attribute filter for file_search
  *
- * Creates a filter to restrict file_search to specific user_id and optionally chat_id.
- * This ensures users only see their own documents.
+ * Uses OR compound filter to allow EITHER:
+ * 1. User's own documents (user_id matches)
+ * 2. Public regulations (doc_type = "regulation")
+ *
+ * This prevents users from seeing other users' documents while
+ * still allowing access to shared regulations.
  */
 export function buildAttributeFilter(
   userId: string,
   chatId?: string
-): AttributeFilter {
-  if (chatId) {
-    // Filter for ephemeral documents: user_id AND chat_id
-    return {
-      type: 'and',
-      filters: [
-        {
-          type: 'eq',
-          key: 'user_id',
-          value: userId,
-        },
-        {
-          type: 'eq',
-          key: 'chat_id',
-          value: chatId,
-        },
-      ],
-    }
-  } else {
-    // Filter for persistent documents: user_id only (My Docs)
-    return {
-      type: 'eq',
-      key: 'user_id',
-      value: userId,
-    }
+): AttributeFilter | undefined {
+  // OR filter: Match user's documents OR public regulations
+  // This prevents "bleeding" of other users' documents
+  return {
+    type: 'or',
+    filters: [
+      // User's own documents (BIG_STORE files with user_id)
+      {
+        type: 'eq',
+        key: 'user_id',
+        value: userId,
+      },
+      // Public regulations (GLOBAL_STORE files marked as regulations)
+      {
+        type: 'eq',
+        key: 'doc_type',
+        value: 'regulation',
+      },
+    ],
   }
 }
 
@@ -65,23 +63,33 @@ export async function queryWithResponses(
     // Build tools array
     const tools: any[] = []
 
-    // Add file_search tool with attribute filtering
+    // Add single file_search tool with ALL vector stores
+    // Note: We apply the user filter only to BIG_STORE by setting attributes on files
+    // GLOBAL_STORE files don't have user_id attribute, so they won't be filtered out
     const fileSearchTool: any = {
       type: 'file_search',
       vector_store_ids: params.vectorStoreIds,
     }
 
-    // Add attribute filter if provided
+    // Apply attribute filter if provided
+    // This will only match files that have the user_id attribute
+    // GLOBAL_STORE files (regulations) don't have user_id, so they'll still be searchable
     if (params.attributeFilter) {
       fileSearchTool.filters = params.attributeFilter
     }
 
-    // Optional: Add max_num_results to reduce latency/tokens
     if (params.maxNumResults) {
       fileSearchTool.max_num_results = params.maxNumResults
     }
 
+    fileSearchTool.ranking_options = {
+      ranker: 'default-2024-08-21',
+      score_threshold: 0.3, // Lower threshold to get more results
+    }
+
     tools.push(fileSearchTool)
+    console.log('[OpenAI] Added file_search tool with vector stores:', params.vectorStoreIds)
+    console.log('[OpenAI] Filter applied:', JSON.stringify(params.attributeFilter, null, 2))
 
     // Add web_search tool if requested
     if (params.useWebSearch) {
@@ -94,9 +102,12 @@ export async function queryWithResponses(
       model: params.model || 'gpt-4o',
       question: params.question.substring(0, 100),
       vectorStores: params.vectorStoreIds,
-      filter: params.attributeFilter,
+      filter: JSON.stringify(params.attributeFilter, null, 2),
       webSearch: params.useWebSearch,
+      toolCount: tools.length,
     })
+    
+    console.log('[OpenAI] Tools being sent:', JSON.stringify(tools, null, 2))
 
     // Call Responses API
     const response = await openai.responses.create({
@@ -113,6 +124,30 @@ export async function queryWithResponses(
       latency: `${latency}ms`,
       outputItems: response.output?.length || 0,
     })
+
+    // Log file_search results for debugging
+    for (const item of response.output || []) {
+      if (item.type === 'file_search_call') {
+        const fileSearchItem = item as any
+        console.log('[OpenAI] File search call:', {
+          id: fileSearchItem.id,
+          status: fileSearchItem.status,
+          queries: fileSearchItem.queries,
+          resultsCount: fileSearchItem.search_results?.length || 0,
+        })
+        
+        if (fileSearchItem.search_results && fileSearchItem.search_results.length > 0) {
+          console.log('[OpenAI] Sample search results:', fileSearchItem.search_results.slice(0, 2).map((r: any) => ({
+            file_id: r.file_id,
+            filename: r.filename,
+            score: r.score,
+            contentLength: r.content?.length || 0,
+          })))
+        } else {
+          console.log('[OpenAI] ℹ️  No search_results in tool call (citations will be in message annotations)')
+        }
+      }
+    }
 
     // Parse response
     const result = parseResponsesAPIOutput(response, latency)

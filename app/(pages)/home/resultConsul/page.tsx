@@ -25,6 +25,15 @@ const dummyAnalysisData = {
 
 export default function ConsultPage() {
   const router = useRouter();
+  const [savedQuestions, setSavedQuestions] = React.useState<any[]>([]);
+
+  // Load saved questions saat komponen mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem("savedQuestions");
+    if (saved) {
+      setSavedQuestions(JSON.parse(saved));
+    }
+  }, []);
 
   // Fungsi untuk export PDF (placeholder - akan diimplementasi dengan backend)
   const handleExportPDF = () => {
@@ -140,6 +149,87 @@ export default function ConsultPage() {
               </div>
             ))}
           </div>
+
+          {/* Saved Questions Section */}
+          {savedQuestions.length > 0 && (
+            <div className="mb-6">
+              <h2
+                className="text-hijautua font-semibold mb-3"
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "16px",
+                }}
+              >
+                Pertanyaan yang Disimpan ({savedQuestions.length})
+              </h2>
+              <div
+                className="bg-gradient-hijau p-4 rounded-2xl"
+                style={{
+                  filter: "drop-shadow(0px 4px 12px rgba(33, 56, 19, 0.15))",
+                }}
+              >
+                <div className="space-y-3">
+                  {savedQuestions.slice(0, 3).map((question, index) => (
+                    <div
+                      key={question.id}
+                      className="bg-white bg-opacity-95 p-3 rounded-xl"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span
+                          className="text-xs font-semibold px-2 py-1 rounded-full text-white"
+                          style={{
+                            backgroundColor:
+                              question.priority === "high"
+                                ? "#FF4444"
+                                : question.priority === "medium"
+                                ? "#FFB800"
+                                : "#4CAF50",
+                            fontFamily: "Poppins, sans-serif",
+                          }}
+                        >
+                          {question.priority === "high"
+                            ? "Penting"
+                            : question.priority === "medium"
+                            ? "Perlu"
+                            : "Opsional"}
+                        </span>
+                        <span
+                          className="text-xs text-hijautua opacity-70"
+                          style={{
+                            fontFamily: "Poppins, sans-serif",
+                          }}
+                        >
+                          {question.category}
+                        </span>
+                      </div>
+                      <p
+                        className="text-hijautua text-sm"
+                        style={{
+                          fontFamily: "Poppins, sans-serif",
+                          lineHeight: "1.4",
+                        }}
+                      >
+                        {question.question}
+                      </p>
+                    </div>
+                  ))}
+                  {savedQuestions.length > 3 && (
+                    <div className="text-center">
+                      <button
+                        onClick={handleQuestionHR}
+                        className="text-white text-sm font-medium hover:opacity-80 transition-opacity"
+                        style={{
+                          fontFamily: "Poppins, sans-serif",
+                        }}
+                      >
+                        Lihat {savedQuestions.length - 3} pertanyaan lainnya →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Action Cards Section with Title */}
           <div className="mb-6">

@@ -580,13 +580,9 @@ export default function ScanningPage() {
         <div className="w-full max-w-sm relative z-10 animate-fade-in">
           <button
             onClick={() => {
-              // TODO: Backend Integration
-              // When results page is ready, navigate to it with analysis data
-              // router.push("/home/results");
-
-              // For MVP demo, go back to upload page
+              // Navigate to results page
               console.log("Analysis data ready:", analysisData);
-              router.back();
+              router.push("/home/resultDocument");
             }}
             className="w-full bg-white text-hijautua font-semibold py-4 rounded-full transition-all duration-300 hover:scale-105"
             style={{

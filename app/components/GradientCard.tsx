@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { ReactNode } from "react";
 
 interface GradientCardProps {
-  title: string;
+  title: string | ReactNode;
   buttonText: string;
   onClick?: () => void;
   width?: string;

@@ -140,7 +140,6 @@ export default function AuthenticationPage() {
       return;
     }
 
-  
     if (!formData.email.trim()) {
       setError("Email wajib diisi");
       return;
@@ -233,10 +232,16 @@ export default function AuthenticationPage() {
           {/* Header Content */}
           <div className="flex-1 flex flex-col justify-end p-6">
             <div className="text-white text-left">
-              <h1 className="text-2xl font-semibold mb-4 mt-5 leading-tight">
+              <h1
+                className="text-2xl font-semibold mb-4 mt-5 leading-tight"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
                 Gabung Bersama GajiBersih
               </h1>
-              <p className="text-base font-light opacity-90 leading-relaxed">
+              <p
+                className="text-base font-light opacity-90 leading-relaxed"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
                 Bersama GajiBersih, setiap keputusan karirmu lebih berarti. Buat
                 akun dan jadilah bagian dari gerakan pekerja yang cerdas dan
                 berdaya.
@@ -282,7 +287,10 @@ export default function AuthenticationPage() {
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
                   {/* Error Message */}
                   {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                    <div
+                      className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                    >
                       {error}
                     </div>
                   )}
@@ -291,7 +299,10 @@ export default function AuthenticationPage() {
                   <div>
                     <label
                       className="block text-sm font-medium mb-2"
-                      style={{ color: "rgba(33, 56, 19, 1)" }}
+                      style={{
+                        color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
+                      }}
                     >
                       Email
                     </label>
@@ -342,7 +353,10 @@ export default function AuthenticationPage() {
                   <div>
                     <label
                       className="block text-sm font-medium mb-2"
-                      style={{ color: "rgba(33, 56, 19, 1)" }}
+                      style={{
+                        color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
+                      }}
                     >
                       Kata Sandi
                     </label>
@@ -444,7 +458,10 @@ export default function AuthenticationPage() {
                     <label
                       htmlFor="remember-me"
                       className="ml-2 text-sm"
-                      style={{ color: "rgba(33, 56, 19, 1)" }}
+                      style={{
+                        color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
+                      }}
                     >
                       Ingat saya
                     </label>
@@ -457,6 +474,7 @@ export default function AuthenticationPage() {
                     className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijaumuda disabled:opacity-60"
                     style={{
                       borderRadius: "20px",
+                      fontFamily: "Poppins, sans-serif",
                     }}
                   >
                     {loginLoading ? "Memproses..." : "Masuk"}
@@ -467,7 +485,10 @@ export default function AuthenticationPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Error Message */}
                   {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                    <div
+                      className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                    >
                       {error}
                     </div>
                   )}
@@ -475,7 +496,10 @@ export default function AuthenticationPage() {
                   <div>
                     <label
                       className="block text-sm font-medium mb-2"
-                      style={{ color: "rgba(33, 56, 19, 1)" }}
+                      style={{
+                        color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
+                      }}
                     >
                       Foto Profil <span className="text-red-500">*</span>
                     </label>
@@ -556,7 +580,10 @@ export default function AuthenticationPage() {
                   <div>
                     <label
                       className="block text-sm font-medium mb-2"
-                      style={{ color: "rgba(33, 56, 19, 1)" }}
+                      style={{
+                        color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
+                      }}
                     >
                       Nama Lengkap <span className="text-red-500">*</span>
                     </label>
@@ -572,6 +599,7 @@ export default function AuthenticationPage() {
                         borderRadius: "10px",
                         border: "1px solid #213813",
                         color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
                       }}
                       onFocus={(e) => {
                         e.target.style.borderColor = "rgba(33, 56, 19, 1)";
@@ -589,7 +617,10 @@ export default function AuthenticationPage() {
                   <div>
                     <label
                       className="block text-sm font-medium mb-2"
-                      style={{ color: "rgba(33, 56, 19, 1)" }}
+                      style={{
+                        color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
+                      }}
                     >
                       Email <span className="text-red-500">*</span>
                     </label>
@@ -781,7 +812,10 @@ export default function AuthenticationPage() {
                     <label
                       htmlFor="agree-terms"
                       className="ml-2 text-sm leading-relaxed"
-                      style={{ color: "rgba(33, 56, 19, 1)" }}
+                      style={{
+                        color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
+                      }}
                     >
                       Saya setuju dengan{" "}
                       <a
@@ -803,6 +837,7 @@ export default function AuthenticationPage() {
                     className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijaumuda disabled:opacity-60"
                     style={{
                       borderRadius: "20px",
+                      fontFamily: "Poppins, sans-serif",
                     }}
                   >
                     {registerLoading ? "Memproses..." : "Daftar"}
@@ -821,10 +856,16 @@ export default function AuthenticationPage() {
           <div className="w-full max-w-md">
             {/* Logo/Brand */}
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-hijautua mb-2">
+              <h1
+                className="text-3xl font-bold text-hijautua mb-2"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
                 GajiBersih
               </h1>
-              <p className="text-hijautua opacity-70">
+              <p
+                className="text-hijautua opacity-70"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
                 Bersama GajiBersih, setiap keputusan karirmu lebih berarti. Buat
                 akun dan jadilah bagian dari gerakan pekerja yang cerdas dan
                 berdaya.{" "}
@@ -1005,7 +1046,10 @@ export default function AuthenticationPage() {
                     <label
                       htmlFor="remember-me-desktop"
                       className="ml-2 text-sm"
-                      style={{ color: "rgba(33, 56, 19, 1)" }}
+                      style={{
+                        color: "rgba(33, 56, 19, 1)",
+                        fontFamily: "Poppins, sans-serif",
+                      }}
                     >
                       Ingat saya
                     </label>
@@ -1016,6 +1060,7 @@ export default function AuthenticationPage() {
                     className="w-full text-white py-3 px-4 hover:opacity-90 transition-colors font-medium mt-8 bg-gradient-hijaumuda"
                     style={{
                       borderRadius: "20px",
+                      fontFamily: "Poppins, sans-serif",
                     }}
                   >
                     Masuk
@@ -1358,6 +1403,7 @@ export default function AuthenticationPage() {
                     className="w-full text-white py-2.5 px-4 hover:opacity-90 transition-colors font-medium mt-4 bg-gradient-hijaumuda disabled:opacity-60"
                     style={{
                       borderRadius: "20px",
+                      fontFamily: "Poppins, sans-serif",
                     }}
                   >
                     {registerLoading ? "Memproses..." : "Daftar"}

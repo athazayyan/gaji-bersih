@@ -2,14 +2,15 @@
 
 :root {
   --hijautua: #213813;
-  --hijaumuda: hsl(101, 47%, 74%);
-  --hijaudaun: #537D5D;
-  --hijaubiru: #0A1D29;
-  --hijauterang: #2F9E74;
+  --hijaumuda: #b0db9c;
+  --hijaudaun: #537d5d;
+  --hijaubiru: #0a1d29;
+  --hijauterang: #2f9e74;
 
- 
-  --gradient-hijau: linear-gradient(180deg,  #2F9E74 -2.01%, #0A1D29 100%);
+  --gradient-hijau: linear-gradient(180deg, #2f9e74 -2.01%, #0a1d29 100%);
+  --gradient-scanning: linear-gradient(180deg, #2f9e74 -94.36%, #0a1d29 75.11%);
 
+  --font-poppins: var(--font-poppins);
 }
 
 /* If you use Tailwind's @theme, you can map CSS vars to tokens here. Removed to avoid editor lint errors. */
@@ -53,10 +54,10 @@ a:hover {
   color: var(--hijauterang);
 }
 
-.bg-hijautua{
+.bg-hijautua {
   background-color: var(--hijautua);
 }
-.bg-hijaumuda{
+.bg-hijaumuda {
   background-color: var(--hijaumuda);
 }
 .bg-hijaudaun {
@@ -72,6 +73,85 @@ a:hover {
 .bg-gradient-hijau {
   background: var(--gradient-hijau);
 }
+
+.bg-gradient-scanning {
+  background: var(--gradient-scanning);
+}
+
+/* Scanning animation styles */
+@keyframes scanLine {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(400px);
+    opacity: 0;
+  }
+}
+
+.scan-line {
+  animation: scanLine 4s ease-in-out infinite;
+}
+
+/* Typing cursor animation */
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.typing-cursor {
+  animation: blink 1s infinite;
+}
+
+/* Document glow effect */
+.document-glow {
+  box-shadow: 0 0 30px rgba(177, 219, 156, 0.3), 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Corner bracket glow */
+.bracket-glow {
+  box-shadow: 0 0 10px rgba(177, 219, 156, 0.8);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Slow bounce for button */
+@keyframes bounce-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
 .text-gradient-hijau {
   color: var(--gradient-hijau);
 }
@@ -81,3 +161,20 @@ a:hover {
 }
 
 
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.7);
+}

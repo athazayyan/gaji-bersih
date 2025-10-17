@@ -1,21 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --hijautua: #213813;
+  --hijaumuda: #B0DB9C;
+  --hijaudaun: #537D5D;
+  --hijaubiru: #0A1D29;
+  --hijauterang: #2F9E74;
+
+ 
+  --gradient-hijau: linear-gradient(180deg,  #2F9E74 -2.01%, #0A1D29 100%);
+
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* If you use Tailwind's @theme, you can map CSS vars to tokens here. Removed to avoid editor lint errors. */
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    /* Optional: tweak primary for dark mode */
+    --primary: #38bdf8; /* sky-400 */
   }
 }
 
@@ -24,3 +28,51 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Default link color using your primary variable */
+a {
+  color: var(--primary);
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.text-hijautua {
+  color: var(--hijautua);
+}
+.text-hijaumuda {
+  color: var(--hijaumuda);
+}
+.text-hijaudaun {
+  color: var(--hijaudaun);
+}
+.text-hijaubiru {
+  color: var(--hijaubiru);
+}
+.text-hijauterang {
+  color: var(--hijauterang);
+}
+
+.bg-hijautua{
+  background-color: var(--hijautua);
+}
+.bg-hijaumuda{
+  background-color: var(--hijaumuda);
+}
+.bg-hijaudaun {
+  background-color: var(--hijaudaun);
+}
+.bg-hijaubiru {
+  background-color: var(--hijaubiru);
+}
+.bg-hijauterang {
+  background-color: var(--hijauterang);
+}
+
+.bg-gradient-hijau {
+  background: var(--gradient-hijau);
+}
+.text-gradient-hijau {
+  color: var(--gradient-hijau);
+}
+

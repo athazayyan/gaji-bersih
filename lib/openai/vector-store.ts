@@ -164,10 +164,13 @@ export async function deleteFromVectorStore(
 ): Promise<boolean> {
   try {
     // Delete from vector store
-    await (openai.vectorStores.files as any).delete(vectorStoreId, vsFileId)
+    // Correct SDK signature: delete(fileID, { vector_store_id })
+    await openai.vectorStores.files.delete(vsFileId, {
+      vector_store_id: vectorStoreId,
+    })
     console.log(`[OpenAI] Deleted from vector store: ${vsFileId}`)
 
-    // Delete the file itself from OpenAI
+    // Delete the file itself from OpenAI Files API
     await openai.files.delete(fileId)
     console.log(`[OpenAI] Deleted file: ${fileId}`)
 

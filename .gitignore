@@ -46,3 +46,6 @@ file-search-and-retrieval.md
 web-search.txt
 AUTH-API-TEST-RESULTS.md
 cookies.txt
+.test-credentials
+test-admin-delete-regulation.sh
+test-delete-vectorstore.sh

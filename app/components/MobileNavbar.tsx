@@ -69,13 +69,14 @@ export default function MobileNavbar({ className }: MobileNavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // Hide navbar on upload, scanning, and result pages
+  // Hide navbar on upload, scanning, result pages, and auth pages
   const shouldHideNavbar =
     pathname.includes("/uploadBerkas") ||
     pathname.includes("/upload") ||
     pathname.includes("/scanning") ||
     pathname.includes("/resultDocument") ||
-    pathname.includes("/resultConsul");
+    pathname.includes("/resultConsul") ||
+    pathname.includes("/auth");
 
   const handleNavClick = (path: string) => {
     router.push(path);

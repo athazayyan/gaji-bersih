@@ -99,7 +99,7 @@ export default function SkeletonLoader({
   if (skeletonType === "page") {
     // Skeleton untuk loading page penuh dengan shimmer effect
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         {/* Mobile Layout */}
         <div className="lg:hidden">
           {/* Header Skeleton dengan shimmer */}
@@ -110,15 +110,15 @@ export default function SkeletonLoader({
           {/* Content Skeleton */}
           <div className="p-6 space-y-4">
             {/* Title skeleton */}
-            <div className="relative h-8 bg-gray-200 rounded-lg overflow-hidden w-3/4">
+            <div className="relative h-8 bg-hijaumuda/30 rounded-lg overflow-hidden w-3/4">
               <div className="skeleton-shimmer-overlay"></div>
             </div>
 
             {/* Text skeletons */}
-            <div className="relative h-4 bg-gray-200 rounded overflow-hidden w-full">
+            <div className="relative h-4 bg-hijaumuda/30 rounded overflow-hidden w-full">
               <div className="skeleton-shimmer-overlay"></div>
             </div>
-            <div className="relative h-4 bg-gray-200 rounded overflow-hidden w-5/6">
+            <div className="relative h-4 bg-hijaumuda/30 rounded overflow-hidden w-5/6">
               <div className="skeleton-shimmer-overlay"></div>
             </div>
 

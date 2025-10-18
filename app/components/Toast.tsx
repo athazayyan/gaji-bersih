@@ -27,7 +27,7 @@ export default function Toast({
     switch (type) {
       case "success":
         return {
-          bg: "bg-gradient-to-r from-green-500 to-green-600",
+          bg: "bg-gradient-to-r from-hijauterang to-hijaudaun",
           icon: (
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -66,7 +66,7 @@ export default function Toast({
         };
       default: // info
         return {
-          bg: "bg-gradient-hijau",
+          bg: "bg-gradient-to-r from-hijauterang to-hijaubiru",
           icon: (
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path

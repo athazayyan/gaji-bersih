@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
         email: user.email,
         full_name: (profile as any).full_name,
         avatar_path: (profile as any).avatar_path,
+        role: (profile as any).role,
         created_at: user.created_at,
       },
     }, { status: 200 })

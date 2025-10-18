@@ -142,7 +142,10 @@ export async function POST(request: NextRequest) {
         attributes.expires_at = Math.floor(expiresAt.getTime() / 1000) // Unix timestamp
       }
 
-      // Upload to OpenAI
+      // Upload to OpenAI and wait for indexing to complete
+      console.log(`[Upload] Starting OpenAI upload to vector store: ${VECTOR_STORES.BIG}`)
+      console.log(`[Upload] Attributes:`, JSON.stringify(attributes, null, 2))
+      
       const uploadResult = await uploadToVectorStore({
         file: new File([fileBuffer], file.name, { type: file.type }),
         vectorStoreId: VECTOR_STORES.BIG,
@@ -152,14 +155,25 @@ export async function POST(request: NextRequest) {
       openaiFileId = uploadResult.file_id
       vsFileId = uploadResult.vs_file_id
 
-      console.log(`[Upload] File uploaded to OpenAI Vector Store: ${vsFileId}`)
+      console.log(`[Upload] ✅ OpenAI upload successful!`)
+      console.log(`[Upload] File ID: ${openaiFileId}`)
+      console.log(`[Upload] VS File ID: ${vsFileId}`)
+      console.log(`[Upload] Status: ${uploadResult.status}`)
+      
+      // Note: File might still be indexing (status: in_progress)
+      // The file will be searchable once status becomes 'completed'
+      // This usually takes 10-30 seconds for PDFs
 
     } catch (openaiError) {
       console.error('[Upload] OpenAI upload error:', openaiError)
+      console.error('[Upload] Error details:', openaiError instanceof Error ? openaiError.message : String(openaiError))
+      console.error('[Upload] Stack:', openaiError instanceof Error ? openaiError.stack : 'No stack trace')
       // Continue even if OpenAI upload fails - we have the file in Supabase
     }
 
     // Step 3: Save metadata to database
+    console.log(`[Upload] Saving to database with file_id=${openaiFileId}, vs_file_id=${vsFileId}`)
+    
     const { data: document, error: dbError } = await (supabase
       .from('documents') as any)
       .insert({
@@ -179,6 +193,13 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single()
+    
+    console.log(`[Upload] Database insert result:`, { 
+      success: !dbError, 
+      document_id: document?.id,
+      file_id: document?.file_id,
+      vs_file_id: document?.vs_file_id 
+    })
 
     if (dbError) {
       console.error('[Upload] Database error:', dbError)

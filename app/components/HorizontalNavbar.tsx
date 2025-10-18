@@ -1,14 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase/client";
 
 interface NavItem {
   name: string;
   path: string;
   icon: React.ReactNode;
+}
+
+interface UserProfile {
+  full_name: string | null;
+  avatar_path: string | null;
 }
 
 const navItems: NavItem[] = [
@@ -62,6 +68,51 @@ const navItems: NavItem[] = [
 export default function HorizontalNavbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const [data, setData] = useState<UserProfile | null>(null);
+
+  const fetchUserProfile = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_path")
+        .eq("id", user.id)
+        .single();
+
+      // Convert avatar_path to full public URL if it exists
+      if (data && data.avatar_path) {
+        const { data: urlData } = supabase.storage
+          .from("avatars")
+          .getPublicUrl(data.avatar_path);
+
+        return {
+          full_name: data.full_name,
+          avatar_path: urlData.publicUrl,
+        };
+      }
+
+      return data;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    fetchUserProfile().then((result) => {
+      // Only set data if result is a valid user profile object
+      if (
+        result &&
+        typeof result === "object" &&
+        "full_name" in result &&
+        "avatar_path" in result
+      ) {
+        setData(result as UserProfile);
+      } else {
+        setData(null);
+      }
+    });
+  }, []);
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -130,7 +181,7 @@ export default function HorizontalNavbar() {
               }}
             >
               <Image
-                src="/dummy/dummyProfil.png"
+                src={data?.avatar_path || "/dummy/dummyProfil.png"}
                 alt="Profile"
                 width={40}
                 height={40}
@@ -146,7 +197,7 @@ export default function HorizontalNavbar() {
                 className="font-semibold text-hijautua text-sm"
                 style={{ fontFamily: "Poppins, sans-serif" }}
               >
-                Username
+                {data?.full_name}
               </p>
             </div>
           </motion.div>

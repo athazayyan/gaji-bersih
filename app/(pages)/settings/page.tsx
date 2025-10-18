@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import HorizontalNavbar from "@/app/components/HorizontalNavbar";
+import { supabase } from "@/lib/supabase/client";
+
+interface UserProfile {
+  full_name: string | null;
+  avatar_path: string | null;
+  email: string | null;
+}
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState(true);
-  const [emailNotif, setEmailNotif] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [autoSave, setAutoSave] = useState(true);
 
+  const [data, setData] = useState<UserProfile | null>(null);
   const settingsCards = [
     {
       id: "profile",
@@ -57,7 +61,7 @@ export default function SettingsPage() {
         </svg>
       ),
       color: "from-red-500 to-red-600",
-      action: () => router.push("/settings/security"),
+      action: () => router.push("/settings/profile"),
     },
     {
       id: "privacy",
@@ -107,6 +111,51 @@ export default function SettingsPage() {
     },
   ];
 
+ const fetchUserProfile = async () => {
+     const {
+       data: { user },
+     } = await supabase.auth.getUser();
+     if (user) {
+       const { data } = await supabase
+         .from("profiles")
+         .select("full_name, avatar_path, email")
+         .eq("id", user.id)
+         .single();
+ 
+       // Convert avatar_path to full public URL if it exists
+       if (data && data.avatar_path) {
+         const { data: urlData } = supabase.storage
+           .from("avatars")
+           .getPublicUrl(data.avatar_path);
+ 
+         return {
+           full_name: data.full_name,
+           avatar_path: urlData.publicUrl,
+           email: data.email,
+         };
+       }
+ 
+       return data;
+     }
+     return null;
+   };
+ 
+   useEffect(() => {
+     fetchUserProfile().then((result) => {
+       // Only set data if result is a valid user profile object
+       if (
+         result &&
+         typeof result === "object" &&
+         "full_name" in result &&
+         "avatar_path" in result
+       ) {
+         setData(result as UserProfile);
+       } else {
+         setData(null);
+       }
+     });
+   }, []);
+ 
   return (
     <>
       {/* Desktop Navbar */}
@@ -166,7 +215,7 @@ export default function SettingsPage() {
                   style={{ width: "72px", height: "72px" }}
                 >
                   <Image
-                    src="/dummy/dummyProfil.png"
+                    src={data?.avatar_path || "/dummy/dummyProfil.png"}
                     alt="Profile"
                     width={72}
                     height={72}
@@ -181,13 +230,13 @@ export default function SettingsPage() {
                       fontSize: "18px",
                     }}
                   >
-                    Username
+                    {data?.full_name || "Username"}
                   </h2>
                   <p
                     className="text-gray-500 text-sm mb-2"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
-                    user@email.com
+                    {data?.email || "atha.al.khand@gmail.com"}
                   </p>
                   <button
                     className="text-hijauterang font-semibold text-sm hover:underline"
@@ -293,7 +342,7 @@ export default function SettingsPage() {
                     style={{ width: "120px", height: "120px" }}
                   >
                     <Image
-                      src="/dummy/dummyProfil.png"
+                      src={data?.avatar_path || "/dummy/dummyProfil.png"}
                       alt="Profile"
                       width={120}
                       height={120}
@@ -304,14 +353,14 @@ export default function SettingsPage() {
                     className="text-hijautua font-bold text-2xl mb-2"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
-                    Username
+                    {data?.full_name || "Username" }
                   </h2>
                   <p
                     className="text-gray-600 mb-6"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
-                    user@email.com
-                  </p>
+                    {data?.email || "user@email.com"}
+           </p>
                   <button
                     className="bg-gradient-hijau text-white px-6 py-3 rounded-xl hover:opacity-90 transition-all font-semibold w-full"
                     style={{ fontFamily: "Poppins, sans-serif" }}

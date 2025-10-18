@@ -273,11 +273,7 @@ function landingpage() {
       {/* CTA Section */}
       <section
         ref={ctaAnimation.ref}
-        className={`relative z-10 text-amber-50 text-center px-6 py-24 bg-hijaubiru transition-all duration-1000 ease-out ${
-          ctaAnimation.isVisible
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-10"
-        }`}
+        className={` z-10 text-amber-50 text-center px-6 py-24 bg-hijaubiru `}
       >
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
           Siap untuk membuat keputusan karir yang lebih baik?

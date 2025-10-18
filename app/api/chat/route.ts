@@ -90,6 +90,15 @@ export async function POST(request: NextRequest) {
 
     const previousAnalysis = analyses?.[0]
 
+    // Check if user has uploaded documents for this chat (for prompt guidance)
+    const { data: userDocuments } = await (supabase.from('documents') as any)
+      .select('id')
+      .eq('chat_id', chat_id)
+      .eq('user_id', user.id)
+      .limit(1)
+
+    const hasUserDocuments = !!previousAnalysis || (userDocuments?.length || 0) > 0
+
     // 5. Load conversation history (last 10 messages)
     const { data: previousRuns } = await supabase
       .from('runs')
@@ -135,10 +144,7 @@ ${message}
     console.log(`[Chat] Processing message for chat: ${chat_id}`)
 
     // 7. Build system prompt
-    const systemPrompt = getChatSystemPrompt(
-      !!previousAnalysis,
-      !!VECTOR_STORES.GLOBAL
-    )
+    const systemPrompt = getChatSystemPrompt(hasUserDocuments, !!VECTOR_STORES.GLOBAL)
 
     // Combine system prompt with user message
     const fullPrompt = `${systemPrompt}\n\n${contextualMessage}`

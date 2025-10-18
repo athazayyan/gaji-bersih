@@ -1,26 +1,58 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import confetti from "canvas-confetti";
+import type { AnalysisMarkdownResult } from "@/lib/openai/types";
+
+type ChatMessageItem = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: string;
+};
 
 export default function ScanningPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [typingText, setTypingText] = useState("");
   const [scanProgress, setScanProgress] = useState(0);
-  const [isScanning, setIsScanning] = useState(true);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string>("document");
   const [fileName, setFileName] = useState<string>("");
 
   // For backend integration later
   const [scanningComplete, setScanningComplete] = useState(false);
-  const [analysisData, setAnalysisData] = useState<any>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [analysisResult, setAnalysisResult] =
+    useState<AnalysisMarkdownResult | null>(null);
+  const [markdownResult, setMarkdownResult] = useState<string>("");
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [retryToken, setRetryToken] = useState(0);
+  const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isSendingChat, setIsSendingChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [resolvedChatId, setResolvedChatId] = useState<string | null>(null);
+  const lastRequestKey = useRef<string | null>(null);
+  const isMountedRef = useRef(true);
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [redirectScheduled, setRedirectScheduled] = useState(false);
+  const activeRequestKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+  const hasInjectedAnalysis = useRef(false);
+  const initialGreetingSent = useRef(false);
 
   const fullText = "AI Sedang Bekerja...";
-  const completeText = "Analisis Selesai!";
+  const completeText = analysisError ? "Analisis Gagal" : "Analisis Selesai!";
 
   // Load file from localStorage
   useEffect(() => {
@@ -88,53 +120,301 @@ export default function ScanningPage() {
     }, 150);
 
     return () => clearInterval(typingInterval);
-  }, [scanningComplete]);
+  }, [completeText, scanningComplete]);
 
   // Scanning progress animation
   useEffect(() => {
+    if (scanningComplete) {
+      setScanProgress(100);
+      return;
+    }
+
+    setScanProgress(0);
+
     const scanningInterval = setInterval(() => {
       setScanProgress((prev) => {
-        if (prev >= 100) {
-          // Reset scanning animation
-          return 0;
+        if (prev >= 98) {
+          return 98;
         }
         return prev + 1.5;
       });
     }, 80);
 
     return () => clearInterval(scanningInterval);
-  }, []);
+  }, [scanningComplete]);
 
-  // Simulate scanning completion (For MVP Demo)
-  // TODO: Remove this when backend is integrated
+  // Run alternative analysis endpoint once file and doc metadata are ready
+  const chatIdParam = searchParams.get("chat_id");
+  const documentIdParam = searchParams.get("document_id");
+  const analysisTypeParam = searchParams.get("analysis_type");
+
+  const handleRetry = () => {
+    setScanningComplete(false);
+    setAnalysisError(null);
+    setAnalysisResult(null);
+    setMarkdownResult("");
+    lastRequestKey.current = null;
+    setRetryToken((prev) => prev + 1);
+    hasInjectedAnalysis.current = false;
+    initialGreetingSent.current = false;
+    setChatMessages([]);
+    setChatError(null);
+    setChatInput("");
+  };
+
+  const handleSendChat = async () => {
+    const trimmed = chatInput.trim();
+
+    if (!trimmed) {
+      return;
+    }
+
+    if (!resolvedChatId) {
+      setChatError("Sesi chat tidak ditemukan. Silakan muat ulang halaman.");
+      return;
+    }
+
+    const userMessage: ChatMessageItem = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      content: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+
+    setChatMessages((prev) => [...prev, userMessage]);
+    setChatInput("");
+    setChatError(null);
+    setIsSendingChat(true);
+
+    const payloadMessage =
+      !hasInjectedAnalysis.current && markdownResult
+        ? `[RINGKASAN ANALISIS TERBARU]\n${markdownResult}\n\n[PERTANYAAN USER]\n${trimmed}`
+        : trimmed;
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: resolvedChatId,
+          message: payloadMessage,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(
+          errorBody?.message ||
+            errorBody?.error ||
+            "Gagal mengirim pertanyaan. Coba lagi sebentar."
+        );
+      }
+
+      const data = await response.json();
+
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: data?.message_id || `assistant-${Date.now()}`,
+          role: "assistant",
+          content: data?.content || "Saya siap membantu!",
+          createdAt: data?.metadata?.created_at || new Date().toISOString(),
+        },
+      ]);
+
+      if (!hasInjectedAnalysis.current && markdownResult) {
+        hasInjectedAnalysis.current = true;
+      }
+    } catch (error: unknown) {
+      console.error("[Scanning] Chat error:", error);
+      const fallbackMessage =
+        "Terjadi kesalahan saat mengirim pertanyaan. Silakan coba lagi.";
+      const derivedMessage =
+        error instanceof Error && error.message
+          ? error.message
+          : typeof error === "string" && error.length > 0
+          ? error
+          : fallbackMessage;
+      setChatError(derivedMessage);
+    } finally {
+      setIsSendingChat(false);
+    }
+  };
+
+  const handleChatKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      if (!isSendingChat) {
+        handleSendChat();
+      }
+    }
+  };
+
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const requestKey = `${chatIdParam ?? ""}|${documentIdParam ?? ""}|${
+      analysisTypeParam ?? ""
+    }|${retryToken}`;
+
+    if (lastRequestKey.current === requestKey) {
+      console.log("[Scanning] Skipping analysis rerun, request key unchanged:", requestKey);
+      return;
+    }
+    console.log("[Scanning] Starting analysis run with key:", requestKey);
+    lastRequestKey.current = requestKey;
+    activeRequestKeyRef.current = requestKey;
+
+    const runAnalysis = async () => {
+      let chatId = chatIdParam || "";
+      let documentId = documentIdParam || "";
+      let analysisType = analysisTypeParam || "";
+
+      try {
+        const storedChatId = localStorage.getItem("analysisChatId");
+        const storedDocumentId = localStorage.getItem("analysisDocumentId");
+        const storedAnalysisType = localStorage.getItem("analysisType");
+
+        if (!chatId && storedChatId) chatId = storedChatId;
+        if (!documentId && storedDocumentId) documentId = storedDocumentId;
+        if (!analysisType && storedAnalysisType) {
+          analysisType = storedAnalysisType;
+        }
+      } catch (storageError: unknown) {
+        console.warn("[Scanning] Unable to read localStorage:", storageError);
+      }
+
+      if (!analysisType) {
+        analysisType = "contract";
+      }
+
+      if (!chatId || !documentId) {
+        setAnalysisError(
+          "Data sesi tidak ditemukan. Silakan mulai ulang proses analisis."
+        );
+        setScanningComplete(true);
+        console.warn("[Scanning] Missing identifiers", { chatId, documentId, analysisType });
+        return;
+      }
+
+      setResolvedChatId(chatId);
+      console.log("[Scanning] Fetching analysis", { chatId, documentId, analysisType });
+
+      setScanningComplete(false);
+      setAnalysisResult(null);
+      setMarkdownResult("");
+      setAnalysisError(null);
+
+      try {
+        const response = await fetch("/api/analyze-alternative", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chat_id: chatId,
+            document_id: documentId,
+            analysis_type: analysisType,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => ({}));
+          throw new Error(
+            errorBody?.message ||
+              errorBody?.error ||
+              "Gagal memperoleh hasil analisis."
+          );
+        }
+
+        const data: AnalysisMarkdownResult = await response.json();
+        console.log("[Scanning] Analysis response received", {
+          id: data.analysis_id,
+          analyzed_at: data.metadata?.analyzed_at,
+          hasMarkdown: !!data.markdown_content,
+        });
+        if (!isMountedRef.current) {
+          console.log("[Scanning] Analysis response ignored: component unmounted.");
+          return;
+        }
+        if (activeRequestKeyRef.current !== requestKey) {
+          console.log("[Scanning] Analysis response ignored: superseded request.", {
+            expected: activeRequestKeyRef.current,
+            received: requestKey,
+          });
+          return;
+        }
+        console.log("[Scanning] Applying analysis result to state");
+        try {
+          localStorage.setItem(
+            "latestAnalysisResult",
+            JSON.stringify(data)
+          );
+        } catch (storageError) {
+          console.warn("[Scanning] Failed to cache analysis result", storageError);
+        }
+        setAnalysisResult(data);
+        setMarkdownResult(data.markdown_content);
+      } catch (error: unknown) {
+        if (!isMountedRef.current) {
+          console.log("[Scanning] Analysis error ignored (unmounted)");
+          return;
+        }
+        console.error("[Scanning] Analysis error:", error);
+        const fallbackMessage =
+          "Terjadi kesalahan saat menjalankan analisis. Coba lagi nanti.";
+        const derivedMessage =
+          error instanceof Error && error.message
+            ? error.message
+            : typeof error === "string" && error.length > 0
+            ? error
+            : fallbackMessage;
+        setAnalysisError(derivedMessage);
+        setScanningComplete(true);
+      } finally {
+        // no-op
+      }
+    };
+
+    runAnalysis();
+
+    return () => {
+      console.log("[Scanning] Cleanup for request key:", requestKey);
+    };
+  }, [analysisTypeParam, chatIdParam, documentIdParam, retryToken]);
+
+  useEffect(() => {
+    if (analysisResult && !scanningComplete) {
+      console.log("[Scanning] Analysis result ready, finishing animation", {
+        analysisId: analysisResult.analysis_id,
+      });
       setScanningComplete(true);
-      console.log("Scanning simulation complete");
-
-      // Mock analysis data (replace with actual backend response)
-      const mockAnalysisData = {
-        gajiPokok: 8000000,
-        tunjangan: {
-          kesehatan: 500000,
-          transport: 300000,
-          makan: 400000,
-        },
-        potongan: {
-          bpjs: 100000,
-          pajak: 400000,
-        },
-        gajiBersih: 8700000,
-      };
-      setAnalysisData(mockAnalysisData);
-
-      // Trigger confetti animation
-      setShowConfetti(true);
       triggerConfetti();
-    }, 5000); // Changed to 5 seconds
+      if (!redirectScheduled) {
+        setRedirectScheduled(true);
+        redirectTimeoutRef.current = setTimeout(() => {
+          const target = `/home/resultDocument?analysis_id=${analysisResult.analysis_id}`;
+          console.log("[Scanning] Redirecting to result page:", target);
+          router.replace(target);
+        }, 2200);
+      }
+    }
+  }, [analysisResult, redirectScheduled, router, scanningComplete]);
 
-    return () => clearTimeout(timer);
-  }, [router]);
+  useEffect(() => {
+    if (analysisResult && !initialGreetingSent.current) {
+      setChatMessages([
+        {
+          id: "assistant-initial",
+          role: "assistant",
+          content:
+            "Analisis selesai! Saya siap membantu menjelaskan hasilnya atau menjawab pertanyaan lanjutan Anda.",
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      initialGreetingSent.current = true;
+    }
+  }, [analysisResult]);
 
   // Confetti animation function
   const triggerConfetti = () => {
@@ -335,21 +615,6 @@ export default function ScanningPage() {
               `,
             }}
           >
-            {/* Document Content - Dynamic based on uploaded file */}
-            {(() => {
-              console.log("Rendering decision:", {
-                hasFilePreview: !!filePreview,
-                fileType,
-                condition:
-                  filePreview && fileType === "image"
-                    ? "image"
-                    : filePreview && fileType === "pdf"
-                    ? "pdf"
-                    : "fallback",
-              });
-              return null;
-            })()}
-
             {filePreview && fileType === "image" ? (
               <div className="h-full overflow-hidden">
                 <img
@@ -575,25 +840,63 @@ export default function ScanningPage() {
         </div>
       </div>
 
-      {/* Bottom Action Button - Only show when complete */}
+      {/* Analysis Result Surface */}
       {scanningComplete && (
-        <div className="w-full max-w-sm lg:max-w-md relative z-10 animate-fade-in">
-          <button
-            onClick={() => {
-              // Navigate to results page
-              console.log("Analysis data ready:", analysisData);
-              router.push("/home/resultDocument");
-            }}
-            className="w-full bg-white text-hijautua font-semibold py-4 lg:py-5 lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "16px",
-              boxShadow:
-                "0 0 20px rgba(177, 219, 156, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2)",
-            }}
-          >
-            Lihat Hasil
-          </button>
+        <div className="w-full max-w-4xl mx-auto relative z-10 animate-fade-in">
+          {analysisError ? (
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40 text-center">
+              <h2
+                className="text-hijautua font-semibold text-xl mb-4"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                Analisis Gagal
+              </h2>
+              <p className="text-gray-600 mb-6">{analysisError}</p>
+              <button
+                onClick={handleRetry}
+                className="inline-flex items-center justify-center rounded-full bg-hijauterang/90 text-white px-6 py-3 font-semibold transition-transform hover:scale-105"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                Coba Lagi
+              </button>
+            </div>
+          ) : redirectScheduled ? (
+            <div className="bg-white/95 backdrop-blur rounded-3xl shadow-2xl border border-white/60 p-10 text-center space-y-4">
+              <h2
+                className="text-2xl font-bold text-hijautua"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                Analisis Selesai!
+              </h2>
+              <p className="text-gray-600">
+                Kami menyiapkan halaman hasil lengkap Anda. Sebentar lagi Anda
+                akan diarahkan secara otomatis.
+              </p>
+              <p className="text-sm text-gray-400">
+                Jika tidak berpindah otomatis dalam beberapa detik, klik tombol
+                di bawah ini.
+              </p>
+              <button
+                onClick={() => {
+                  if (analysisResult) {
+                    router.replace(
+                      `/home/resultDocument?analysis_id=${analysisResult.analysis_id}`
+                    );
+                  }
+                }}
+                className="inline-flex items-center justify-center rounded-full bg-hijauterang text-white px-6 py-3 font-semibold transition-transform hover:scale-105"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                Buka Halaman Hasil
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40 text-center">
+              <p className="text-gray-600">
+                Menyusun hasil analisis terbaik untuk dokumen Anda...
+              </p>
+            </div>
+          )}
         </div>
       )}
 

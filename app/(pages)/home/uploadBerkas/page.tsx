@@ -9,6 +9,8 @@ export default function UploadBerkasPage() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -68,18 +70,128 @@ export default function UploadBerkasPage() {
     }
   };
 
-  const handleAnalysis = () => {
+  const inferAnalysisType = (file: File): "contract" | "payslip" | "nda" | "policy" => {
+    const name = file.name.toLowerCase();
+    if (name.includes("slip") || name.includes("gaji") || name.includes("payslip")) {
+      return "payslip";
+    }
+    if (name.includes("nda") || name.includes("non-disclosure")) {
+      return "nda";
+    }
+    if (name.includes("policy") || name.includes("kebijakan")) {
+      return "policy";
+    }
+    return "contract";
+  };
+
+  const handleAnalysis = async () => {
     if (selectedFile) {
+      setUploadError(null);
+      setIsUploading(true);
+
+      const analysisType = inferAnalysisType(selectedFile);
+
       // Save file preview to localStorage for scanning page (if available)
       if (filePreview) {
         localStorage.setItem("uploadedFile", filePreview);
       }
       localStorage.setItem("uploadedFileType", getFileType(selectedFile));
       localStorage.setItem("uploadedFileName", selectedFile.name);
+      localStorage.setItem("analysisType", analysisType);
 
-      // Navigate to scanning page
-      console.log("Starting analysis for:", selectedFile.name);
-      router.push("/home/scanning");
+      try {
+        const existingChatId = localStorage.getItem("analysisChatId");
+        if (existingChatId) {
+          await fetch("/api/chat/end", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: existingChatId }),
+          }).catch((error) => {
+            console.warn("[Upload] Failed to end previous session:", error);
+          });
+          localStorage.removeItem("analysisChatId");
+          localStorage.removeItem("analysisDocumentId");
+        }
+
+        const sessionResponse = await fetch("/api/chat/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ force_new: true }),
+        });
+
+        if (!sessionResponse.ok) {
+          const errorBody = await sessionResponse.json().catch(() => ({}));
+          throw new Error(
+            errorBody?.error ||
+              errorBody?.message ||
+              "Gagal membuat sesi analisis baru."
+          );
+        }
+
+        const sessionData = await sessionResponse.json();
+        const chatId: string | undefined = sessionData?.chat_id;
+
+        if (!chatId) {
+          throw new Error("ID sesi tidak tersedia.");
+        }
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("chat_id", chatId);
+        formData.append("doc_type", analysisType);
+        formData.append("save_to_my_docs", "false");
+
+        const uploadResponse = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errorBody = await uploadResponse.json().catch(() => ({}));
+          throw new Error(
+            errorBody?.error ||
+              errorBody?.message ||
+              "Gagal mengunggah dokumen ke server."
+          );
+        }
+
+        const uploadData = await uploadResponse.json();
+        const documentId: string | undefined = uploadData?.document?.id;
+
+        if (!documentId) {
+          throw new Error("ID dokumen tidak tersedia setelah upload.");
+        }
+
+        localStorage.setItem("analysisChatId", chatId);
+        localStorage.setItem("analysisDocumentId", documentId);
+
+        console.log("Starting analysis for:", selectedFile.name, {
+          chatId,
+          documentId,
+          analysisType,
+        });
+
+        const params = new URLSearchParams({
+          chat_id: chatId,
+          document_id: documentId,
+          analysis_type: analysisType,
+        });
+
+        router.push(`/home/scanning?${params.toString()}`);
+      } catch (error: unknown) {
+        console.error("[Upload] Failed to start analysis:", error);
+        const fallbackMessage =
+          "Terjadi kesalahan saat memulai analisis. Silakan coba lagi.";
+        const derivedMessage =
+          error instanceof Error && error.message
+            ? error.message
+            : typeof error === "string" && error.length > 0
+            ? error
+            : fallbackMessage;
+        setUploadError(derivedMessage);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -382,9 +494,9 @@ export default function UploadBerkasPage() {
             <div className="mt-8 mb-8">
               <button
                 onClick={handleAnalysis}
-                disabled={!selectedFile}
+                disabled={!selectedFile || isUploading}
                 className={`w-full bg-gradient-hijau text-white font-medium py-4 rounded-full transition-all duration-300 ${
-                  selectedFile
+                  selectedFile && !isUploading
                     ? "hover:opacity-90 hover:scale-105"
                     : "opacity-50 cursor-not-allowed"
                 }`}
@@ -394,8 +506,16 @@ export default function UploadBerkasPage() {
                   height: "56px",
                 }}
               >
-                Lanjutkan Analisis
+                {isUploading ? "Menyiapkan analisis..." : "Lanjutkan Analisis"}
               </button>
+              {uploadError && (
+                <p
+                  className="text-red-500 text-sm text-center mt-3"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  {uploadError}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -724,14 +844,29 @@ export default function UploadBerkasPage() {
                       {/* Analyze Button */}
                       <button
                         onClick={handleAnalysis}
-                        className="bg-gradient-hijau text-white font-semibold py-4 rounded-xl hover:opacity-90 hover:shadow-lg transition-all"
+                        disabled={!selectedFile || isUploading}
+                        className={`bg-gradient-hijau text-white font-semibold py-4 rounded-xl transition-all ${
+                          selectedFile && !isUploading
+                            ? "hover:opacity-90 hover:shadow-lg"
+                            : "opacity-60 cursor-not-allowed"
+                        }`}
                         style={{
                           fontFamily: "Poppins, sans-serif",
                           fontSize: "18px",
                         }}
                       >
-                        Lanjutkan Analisis →
+                        {isUploading
+                          ? "Menyiapkan analisis..."
+                          : "Lanjutkan Analisis →"}
                       </button>
+                      {uploadError && (
+                        <p
+                          className="text-red-500 text-sm mt-3"
+                          style={{ fontFamily: "Poppins, sans-serif" }}
+                        >
+                          {uploadError}
+                        </p>
+                      )}
                     </div>
                   ) : (
                     /* Upload Area - Desktop */

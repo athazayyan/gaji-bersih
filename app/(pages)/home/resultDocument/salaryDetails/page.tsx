@@ -765,9 +765,7 @@ export default function SalaryDetailsPage() {
 
           {/* Total Kotor Card */}
           <div className="mb-4">
-            <div
-              className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 w-full border-2 border-blue-200"
-            >
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 w-full border-2 border-blue-200">
               <div className="flex justify-between items-center">
                 <span
                   className="text-blue-900 font-semibold text-sm sm:text-base"
@@ -863,9 +861,7 @@ export default function SalaryDetailsPage() {
 
           {/* Summary Card */}
           <div className="mb-6">
-            <div
-              className="bg-gradient-hijau rounded-xl p-5 w-full text-white"
-            >
+            <div className="bg-gradient-hijau rounded-xl p-5 w-full text-white">
               <h3
                 className="text-sm font-medium mb-4 opacity-90"
                 style={{ fontFamily: "Poppins, sans-serif" }}

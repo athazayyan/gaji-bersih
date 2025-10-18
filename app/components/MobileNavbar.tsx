@@ -126,8 +126,9 @@ export default function MobileNavbar({ className }: MobileNavbarProps) {
   // Use appropriate nav items based on page type
   const currentNavItems = isAdminPage ? adminNavItems : navItems;
 
-  // Hide navbar on upload, scanning, result pages, and auth pages (but not admin pages)
+  // Hide navbar on upload, scanning, result pages, auth pages, and landing page (but not admin pages)
   const shouldHideNavbar =
+    pathname === "/" ||
     pathname.includes("/uploadBerkas") ||
     (pathname.includes("/upload") && !pathname.includes("/admin")) ||
     pathname.includes("/scanning") ||

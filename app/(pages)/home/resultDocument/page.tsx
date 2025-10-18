@@ -94,9 +94,10 @@ export default function ResultDocumentPage() {
   }, [queryAnalysisId]);
 
   useEffect(() => {
-    const savedFile = typeof window !== "undefined"
-      ? localStorage.getItem("uploadedFile")
-      : null;
+    const savedFile =
+      typeof window !== "undefined"
+        ? localStorage.getItem("uploadedFile")
+        : null;
     const savedFileType =
       typeof window !== "undefined"
         ? localStorage.getItem("uploadedFileType")
@@ -141,7 +142,8 @@ export default function ResultDocumentPage() {
     }
 
     // Validate chat_id is a valid UUID
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(chatId)) {
       console.error("[ResultPage] Invalid chat_id format:", chatId);
       setChatError(
@@ -188,15 +190,17 @@ export default function ResultDocumentPage() {
         const errorBody = await response.json().catch(() => ({}));
         console.error("[ResultPage] Chat API error:", errorBody);
         throw new Error(
-          errorBody?.details 
+          errorBody?.details
             ? `${errorBody.error}: ${JSON.stringify(errorBody.details)}`
-            : errorBody?.message || errorBody?.error || "Gagal mengirim pertanyaan. Coba lagi sebentar."
+            : errorBody?.message ||
+              errorBody?.error ||
+              "Gagal mengirim pertanyaan. Coba lagi sebentar."
         );
       }
 
       const data = await response.json();
       console.log("[ResultPage] Chat response received:", data);
-      
+
       setChatMessages((prev) => [
         ...prev,
         {
@@ -234,8 +238,7 @@ export default function ResultDocumentPage() {
   const documentLabel = useMemo(() => {
     if (!analysisResult) return "Dokumen";
     return (
-      DOC_TYPE_LABELS[analysisResult.document.type?.toLowerCase()] ||
-      "Dokumen"
+      DOC_TYPE_LABELS[analysisResult.document.type?.toLowerCase()] || "Dokumen"
     );
   }, [analysisResult]);
 
@@ -363,7 +366,7 @@ export default function ResultDocumentPage() {
           max-width: 100%;
         }
         .markdown-content code {
-          font-family: 'Courier New', Courier, monospace;
+          font-family: "Courier New", Courier, monospace;
           font-size: 0.875rem;
         }
         .markdown-content pre code {
@@ -383,7 +386,7 @@ export default function ResultDocumentPage() {
           word-break: break-word;
           hyphens: auto;
         }
-        
+
         /* Chat message markdown styling */
         .prose.prose-sm {
           font-size: 0.875rem;
@@ -503,283 +506,288 @@ export default function ResultDocumentPage() {
             <article className="space-y-6">
               <div className="bg-white/95 backdrop-blur rounded-3xl shadow-lg border border-white/60 p-6 lg:p-8 space-y-6">
                 <div className="flex flex-wrap items-center gap-3">
-                {searchMethodBadges.map((badge) => (
-                  <span
-                    key={badge.key}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-hijauterang/10 text-hijautua font-medium text-xs uppercase tracking-wide"
-                  >
-                    <span className="inline-block w-2 h-2 bg-hijauterang rounded-full" />
-                    {badge.label}
-                    <span className="sr-only">{badge.key}</span>
-                  </span>
-                ))}
-              </div>
+                  {searchMethodBadges.map((badge) => (
+                    <span
+                      key={badge.key}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-hijauterang/10 text-hijautua font-medium text-xs uppercase tracking-wide"
+                    >
+                      <span className="inline-block w-2 h-2 bg-hijauterang rounded-full" />
+                      {badge.label}
+                      <span className="sr-only">{badge.key}</span>
+                    </span>
+                  ))}
+                </div>
 
-              <div className="grid sm:grid-cols-3 gap-4">
-                <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4">
-                  <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
-                    ID Analisis
-                  </p>
-                  <p className="text-sm text-gray-700 break-all mt-1">
-                    {analysisResult.analysis_id}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4">
-                  <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
-                    ID Chat
-                  </p>
-                  <p className="text-sm text-gray-700 break-all mt-1">
-                    {analysisResult.chat_id}
-                  </p>
-                </div>
-                {tokensUsed && (
+                <div className="grid sm:grid-cols-3 gap-4">
                   <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4">
                     <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
-                      Penggunaan Token
+                      ID Analisis
                     </p>
-                    <p className="text-sm text-gray-700 mt-1">
-                      Total:{" "}
-                      <strong>
-                        {tokensUsed.total_tokens.toLocaleString("id-ID")}
-                      </strong>
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Prompt {tokensUsed.prompt_tokens.toLocaleString("id-ID")} •
-                      Completion{" "}
-                      {tokensUsed.completion_tokens.toLocaleString("id-ID")}
+                    <p className="text-sm text-gray-700 break-all mt-1">
+                      {analysisResult.analysis_id}
                     </p>
                   </div>
-                )}
-              </div>
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
+                      ID Chat
+                    </p>
+                    <p className="text-sm text-gray-700 break-all mt-1">
+                      {analysisResult.chat_id}
+                    </p>
+                  </div>
+                  {tokensUsed && (
+                    <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4">
+                      <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">
+                        Penggunaan Token
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Total:{" "}
+                        <strong>
+                          {tokensUsed.total_tokens.toLocaleString("id-ID")}
+                        </strong>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Prompt{" "}
+                        {tokensUsed.prompt_tokens.toLocaleString("id-ID")} •
+                        Completion{" "}
+                        {tokensUsed.completion_tokens.toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-              <div className="bg-gradient-to-br from-white to-gray-50/50 rounded-2xl border border-gray-100 shadow-inner p-6 lg:p-8">
-                <div className="markdown-content">
-                  <ReactMarkdown
-                    components={{
-                      a: ({ node, ...props }) => (
-                        <a
-                          {...props}
-                          className="text-hijauterang underline underline-offset-4 decoration-hijauterang/50 hover:text-hijautua hover:decoration-hijautua transition-colors"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        />
-                      ),
-                      h1: ({ node, ...props }) => (
-                        <h1
-                          {...props}
-                          className="text-3xl font-bold mt-0 mb-6 text-hijautua border-b-2 border-hijautua/20 pb-4"
-                          style={{ fontFamily: "Poppins, sans-serif" }}
-                        />
-                      ),
-                      h2: ({ node, ...props }) => (
-                        <h2
-                          {...props}
-                          className="text-2xl font-semibold mt-8 mb-5 text-hijauterang flex items-center gap-3 border-l-4 border-hijauterang pl-4"
-                          style={{ fontFamily: "Poppins, sans-serif" }}
-                        />
-                      ),
-                      h3: ({ node, ...props }) => (
-                        <h3
-                          {...props}
-                          className="text-xl font-semibold mt-6 mb-3 text-hijautua bg-hijautua/5 px-4 py-2 rounded-lg"
-                          style={{ fontFamily: "Poppins, sans-serif" }}
-                        />
-                      ),
-                      h4: ({ node, ...props }) => (
-                        <h4
-                          {...props}
-                          className="text-lg font-semibold mt-4 mb-2 text-gray-800"
-                          style={{ fontFamily: "Poppins, sans-serif" }}
-                        />
-                      ),
-                      p: ({ node, ...props }) => (
-                        <p
-                          {...props}
-                          className="text-gray-700 leading-relaxed mb-4 text-base break-words"
-                        />
-                      ),
-                      ul: ({ node, ...props }) => (
-                        <ul
-                          {...props}
-                          className="space-y-2 my-4 ml-2"
-                        />
-                      ),
-                      ol: ({ node, ...props }) => (
-                        <ol
-                          {...props}
-                          className="list-decimal space-y-2 my-4 ml-6 marker:text-hijauterang marker:font-semibold"
-                        />
-                      ),
-                      li: ({ node, children, ...props }) => {
-                        // Check if this is a checkbox item
-                        const childText = children?.toString() || '';
-                        const isChecked = childText.startsWith('[✅]') || childText.startsWith('[x]');
-                        const isUnchecked = childText.startsWith('[ ]');
-                        
-                        if (isChecked || isUnchecked) {
-                          // Remove the checkbox markdown and render as styled checkbox
-                          const text = childText.replace(/^\[(✅|x| )\]\s*/, '');
+                <div className="bg-gradient-to-br from-white to-gray-50/50 rounded-2xl border border-gray-100 shadow-inner p-6 lg:p-8">
+                  <div className="markdown-content">
+                    <ReactMarkdown
+                      components={{
+                        a: ({ node, ...props }) => (
+                          <a
+                            {...props}
+                            className="text-hijauterang underline underline-offset-4 decoration-hijauterang/50 hover:text-hijautua hover:decoration-hijautua transition-colors"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          />
+                        ),
+                        h1: ({ node, ...props }) => (
+                          <h1
+                            {...props}
+                            className="text-3xl font-bold mt-0 mb-6 text-hijautua border-b-2 border-hijautua/20 pb-4"
+                            style={{ fontFamily: "Poppins, sans-serif" }}
+                          />
+                        ),
+                        h2: ({ node, ...props }) => (
+                          <h2
+                            {...props}
+                            className="text-2xl font-semibold mt-8 mb-5 text-hijauterang flex items-center gap-3 border-l-4 border-hijauterang pl-4"
+                            style={{ fontFamily: "Poppins, sans-serif" }}
+                          />
+                        ),
+                        h3: ({ node, ...props }) => (
+                          <h3
+                            {...props}
+                            className="text-xl font-semibold mt-6 mb-3 text-hijautua bg-hijautua/5 px-4 py-2 rounded-lg"
+                            style={{ fontFamily: "Poppins, sans-serif" }}
+                          />
+                        ),
+                        h4: ({ node, ...props }) => (
+                          <h4
+                            {...props}
+                            className="text-lg font-semibold mt-4 mb-2 text-gray-800"
+                            style={{ fontFamily: "Poppins, sans-serif" }}
+                          />
+                        ),
+                        p: ({ node, ...props }) => (
+                          <p
+                            {...props}
+                            className="text-gray-700 leading-relaxed mb-4 text-base break-words"
+                          />
+                        ),
+                        ul: ({ node, ...props }) => (
+                          <ul {...props} className="space-y-2 my-4 ml-2" />
+                        ),
+                        ol: ({ node, ...props }) => (
+                          <ol
+                            {...props}
+                            className="list-decimal space-y-2 my-4 ml-6 marker:text-hijauterang marker:font-semibold"
+                          />
+                        ),
+                        li: ({ node, children, ...props }) => {
+                          // Check if this is a checkbox item
+                          const childText = children?.toString() || "";
+                          const isChecked =
+                            childText.startsWith("[✅]") ||
+                            childText.startsWith("[x]");
+                          const isUnchecked = childText.startsWith("[ ]");
+
+                          if (isChecked || isUnchecked) {
+                            // Remove the checkbox markdown and render as styled checkbox
+                            const text = childText.replace(
+                              /^\[(✅|x| )\]\s*/,
+                              ""
+                            );
+                            return (
+                              <li
+                                {...props}
+                                className="flex items-start gap-3 text-gray-700 leading-relaxed break-words"
+                              >
+                                <span
+                                  className={`inline-flex items-center justify-center w-5 h-5 rounded border-2 mt-0.5 flex-shrink-0 ${
+                                    isChecked
+                                      ? "bg-hijauterang border-hijauterang"
+                                      : "bg-white border-gray-300"
+                                  }`}
+                                >
+                                  {isChecked && (
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 20 20"
+                                      fill="white"
+                                      className="w-4 h-4"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                  )}
+                                </span>
+                                <span className="break-words min-w-0 flex-1">
+                                  {text}
+                                </span>
+                              </li>
+                            );
+                          }
+
+                          // Regular list item with bullet
                           return (
                             <li
                               {...props}
-                              className="flex items-start gap-3 text-gray-700 leading-relaxed break-words"
+                              className="flex items-start gap-2 text-gray-700 leading-relaxed break-words"
                             >
-                              <span className={`inline-flex items-center justify-center w-5 h-5 rounded border-2 mt-0.5 flex-shrink-0 ${
-                                isChecked 
-                                  ? 'bg-hijauterang border-hijauterang' 
-                                  : 'bg-white border-gray-300'
-                              }`}>
-                                {isChecked && (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20"
-                                    fill="white"
-                                    className="w-4 h-4"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                )}
+                              <span className="text-hijauterang font-bold text-lg mt-0.5 flex-shrink-0">
+                                •
                               </span>
-                              <span className="break-words min-w-0 flex-1">{text}</span>
+                              <span className="break-words min-w-0 flex-1">
+                                {children}
+                              </span>
                             </li>
                           );
-                        }
-                        
-                        // Regular list item with bullet
-                        return (
-                          <li
+                        },
+                        blockquote: ({ node, ...props }) => (
+                          <blockquote
                             {...props}
-                            className="flex items-start gap-2 text-gray-700 leading-relaxed break-words"
-                          >
-                            <span className="text-hijauterang font-bold text-lg mt-0.5 flex-shrink-0">•</span>
-                            <span className="break-words min-w-0 flex-1">{children}</span>
-                          </li>
-                        );
-                      },
-                      blockquote: ({ node, ...props }) => (
-                        <blockquote
-                          {...props}
-                          className="border-l-4 border-hijauterang/80 pl-5 pr-4 py-3 my-4 italic text-gray-700 bg-hijauterang/5 rounded-r-lg shadow-sm break-words overflow-wrap-anywhere"
-                        />
-                      ),
-                      strong: ({ node, ...props }) => (
-                        <strong
-                          {...props}
-                          className="font-bold text-hijautua"
-                        />
-                      ),
-                      em: ({ node, ...props }) => (
-                        <em
-                          {...props}
-                          className="italic text-gray-600"
-                        />
-                      ),
-                      hr: ({ node, ...props }) => (
-                        <hr
-                          {...props}
-                          className="my-8 border-t-2 border-gray-200"
-                        />
-                      ),
-                      code: ({ node, inline, ...props }: any) =>
-                        inline ? (
-                          <code
-                            {...props}
-                            className="px-2 py-1 bg-hijautua/10 text-hijautua rounded text-sm font-mono border border-hijautua/20 break-all"
+                            className="border-l-4 border-hijauterang/80 pl-5 pr-4 py-3 my-4 italic text-gray-700 bg-hijauterang/5 rounded-r-lg shadow-sm break-words overflow-wrap-anywhere"
                           />
-                        ) : (
-                          <div className="relative my-4 rounded-lg overflow-hidden">
+                        ),
+                        strong: ({ node, ...props }) => (
+                          <strong
+                            {...props}
+                            className="font-bold text-hijautua"
+                          />
+                        ),
+                        em: ({ node, ...props }) => (
+                          <em {...props} className="italic text-gray-600" />
+                        ),
+                        hr: ({ node, ...props }) => (
+                          <hr
+                            {...props}
+                            className="my-8 border-t-2 border-gray-200"
+                          />
+                        ),
+                        code: ({ node, inline, ...props }: any) =>
+                          inline ? (
                             <code
                               {...props}
-                              className="block p-4 bg-gray-900 text-gray-100 rounded-lg text-sm font-mono overflow-x-auto whitespace-pre-wrap break-words"
-                              style={{ 
-                                wordBreak: 'break-word',
-                                overflowWrap: 'anywhere'
-                              }}
+                              className="px-2 py-1 bg-hijautua/10 text-hijautua rounded text-sm font-mono border border-hijautua/20 break-all"
+                            />
+                          ) : (
+                            <div className="relative my-4 rounded-lg overflow-hidden">
+                              <code
+                                {...props}
+                                className="block p-4 bg-gray-900 text-gray-100 rounded-lg text-sm font-mono overflow-x-auto whitespace-pre-wrap break-words"
+                                style={{
+                                  wordBreak: "break-word",
+                                  overflowWrap: "anywhere",
+                                }}
+                              />
+                            </div>
+                          ),
+                        table: ({ node, ...props }) => (
+                          <div className="overflow-x-auto my-6 rounded-lg border border-gray-200 shadow-sm">
+                            <table
+                              {...props}
+                              className="min-w-full divide-y divide-gray-200"
                             />
                           </div>
                         ),
-                      table: ({ node, ...props }) => (
-                        <div className="overflow-x-auto my-6 rounded-lg border border-gray-200 shadow-sm">
-                          <table
+                        thead: ({ node, ...props }) => (
+                          <thead {...props} className="bg-hijauterang/10" />
+                        ),
+                        th: ({ node, ...props }) => (
+                          <th
                             {...props}
-                            className="min-w-full divide-y divide-gray-200"
+                            className="px-6 py-3 text-left text-sm font-semibold text-hijautua"
                           />
-                        </div>
-                      ),
-                      thead: ({ node, ...props }) => (
-                        <thead
-                          {...props}
-                          className="bg-hijauterang/10"
-                        />
-                      ),
-                      th: ({ node, ...props }) => (
-                        <th
-                          {...props}
-                          className="px-6 py-3 text-left text-sm font-semibold text-hijautua"
-                        />
-                      ),
-                      tbody: ({ node, ...props }) => (
-                        <tbody
-                          {...props}
-                          className="bg-white divide-y divide-gray-100"
-                        />
-                      ),
-                      td: ({ node, ...props }) => (
-                        <td
-                          {...props}
-                          className="px-6 py-4 text-sm text-gray-700"
-                        />
-                      ),
-                    }}
-                  >
-                    {markdownResult}
-                  </ReactMarkdown>
+                        ),
+                        tbody: ({ node, ...props }) => (
+                          <tbody
+                            {...props}
+                            className="bg-white divide-y divide-gray-100"
+                          />
+                        ),
+                        td: ({ node, ...props }) => (
+                          <td
+                            {...props}
+                            className="px-6 py-4 text-sm text-gray-700"
+                          />
+                        ),
+                      }}
+                    >
+                      {markdownResult}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white/90 backdrop-blur rounded-3xl border border-white/60 shadow-lg p-6 lg:p-8 space-y-6">
-              <h2
-                className="text-lg font-semibold text-hijautua"
-                style={{ fontFamily: "Poppins, sans-serif" }}
-              >
-                Langkah Selanjutnya yang Direkomendasikan
-              </h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 space-y-2">
-                  <p className="text-sm font-semibold text-hijautua">
-                    Diskusikan dengan HR
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Sampaikan temuan penting dari analisis ini dan minta klarifikasi
-                    tertulis untuk klausul yang berisiko.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 space-y-2">
-                  <p className="text-sm font-semibold text-hijautua">
-                    Siapkan Bukti Pendukung
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Kumpulkan referensi hukum atau dokumen pembanding jika ingin
-                    mengajukan keberatan.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 space-y-2">
-                  <p className="text-sm font-semibold text-hijautua">
-                    Konsultasi Profesional
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Pertimbangkan berkonsultasi dengan konsultan ketenagakerjaan
-                    untuk saran strategis berikutnya.
-                  </p>
+              <div className="bg-white/90 backdrop-blur rounded-3xl border border-white/60 shadow-lg p-6 lg:p-8 space-y-6">
+                <h2
+                  className="text-lg font-semibold text-hijautua"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  Langkah Selanjutnya yang Direkomendasikan
+                </h2>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 space-y-2">
+                    <p className="text-sm font-semibold text-hijautua">
+                      Diskusikan dengan HR
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Sampaikan temuan penting dari analisis ini dan minta
+                      klarifikasi tertulis untuk klausul yang berisiko.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 space-y-2">
+                    <p className="text-sm font-semibold text-hijautua">
+                      Siapkan Bukti Pendukung
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Kumpulkan referensi hukum atau dokumen pembanding jika
+                      ingin mengajukan keberatan.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50/80 p-4 space-y-2">
+                    <p className="text-sm font-semibold text-hijautua">
+                      Konsultasi Profesional
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Pertimbangkan berkonsultasi dengan konsultan
+                      ketenagakerjaan untuk saran strategis berikutnya.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </article>
+            </article>
           </div>
 
           {/* Right Column - Chat & Document Summary (Sticky) */}
@@ -907,22 +915,37 @@ export default function ResultDocumentPage() {
                               <ReactMarkdown
                                 components={{
                                   p: ({ node, ...props }) => (
-                                    <p {...props} className="mb-1.5 sm:mb-2 last:mb-0 break-words text-xs sm:text-sm" />
+                                    <p
+                                      {...props}
+                                      className="mb-1.5 sm:mb-2 last:mb-0 break-words text-xs sm:text-sm"
+                                    />
                                   ),
                                   strong: ({ node, ...props }) => (
-                                    <strong {...props} className="font-bold text-hijautua" />
+                                    <strong
+                                      {...props}
+                                      className="font-bold text-hijautua"
+                                    />
                                   ),
                                   em: ({ node, ...props }) => (
                                     <em {...props} className="italic" />
                                   ),
                                   ul: ({ node, ...props }) => (
-                                    <ul {...props} className="list-none space-y-0.5 sm:space-y-1 my-1.5 sm:my-2 text-xs sm:text-sm" />
+                                    <ul
+                                      {...props}
+                                      className="list-none space-y-0.5 sm:space-y-1 my-1.5 sm:my-2 text-xs sm:text-sm"
+                                    />
                                   ),
                                   ol: ({ node, ...props }) => (
-                                    <ol {...props} className="list-decimal ml-3 sm:ml-4 space-y-0.5 sm:space-y-1 my-1.5 sm:my-2 marker:text-hijauterang marker:font-semibold text-xs sm:text-sm" />
+                                    <ol
+                                      {...props}
+                                      className="list-decimal ml-3 sm:ml-4 space-y-0.5 sm:space-y-1 my-1.5 sm:my-2 marker:text-hijauterang marker:font-semibold text-xs sm:text-sm"
+                                    />
                                   ),
                                   li: ({ node, ...props }) => (
-                                    <li {...props} className="break-words text-xs sm:text-sm" />
+                                    <li
+                                      {...props}
+                                      className="break-words text-xs sm:text-sm"
+                                    />
                                   ),
                                   a: ({ node, ...props }) => (
                                     <a
@@ -951,13 +974,22 @@ export default function ResultDocumentPage() {
                                     />
                                   ),
                                   h1: ({ node, ...props }) => (
-                                    <h1 {...props} className="text-sm sm:text-base font-bold mt-2 sm:mt-3 mb-1.5 sm:mb-2 text-hijautua" />
+                                    <h1
+                                      {...props}
+                                      className="text-sm sm:text-base font-bold mt-2 sm:mt-3 mb-1.5 sm:mb-2 text-hijautua"
+                                    />
                                   ),
                                   h2: ({ node, ...props }) => (
-                                    <h2 {...props} className="text-xs sm:text-sm font-bold mt-1.5 sm:mt-2 mb-1 text-hijautua" />
+                                    <h2
+                                      {...props}
+                                      className="text-xs sm:text-sm font-bold mt-1.5 sm:mt-2 mb-1 text-hijautua"
+                                    />
                                   ),
                                   h3: ({ node, ...props }) => (
-                                    <h3 {...props} className="text-xs sm:text-sm font-semibold mt-1.5 sm:mt-2 mb-1 text-gray-800" />
+                                    <h3
+                                      {...props}
+                                      className="text-xs sm:text-sm font-semibold mt-1.5 sm:mt-2 mb-1 text-gray-800"
+                                    />
                                   ),
                                 }}
                               >
@@ -983,11 +1015,22 @@ export default function ResultDocumentPage() {
                         <div className="max-w-[90%] sm:max-w-[85%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm bg-white border border-gray-200">
                           <div className="flex items-center gap-1.5 sm:gap-2">
                             <div className="flex space-x-0.5 sm:space-x-1">
-                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                              <div
+                                className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce"
+                                style={{ animationDelay: "0ms" }}
+                              ></div>
+                              <div
+                                className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce"
+                                style={{ animationDelay: "150ms" }}
+                              ></div>
+                              <div
+                                className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce"
+                                style={{ animationDelay: "300ms" }}
+                              ></div>
                             </div>
-                            <span className="text-[10px] sm:text-xs text-gray-500">AI sedang mengetik...</span>
+                            <span className="text-[10px] sm:text-xs text-gray-500">
+                              AI sedang mengetik...
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -1038,15 +1081,36 @@ export default function ResultDocumentPage() {
                 >
                   {isSendingChat ? (
                     <>
-                      <svg className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Mengirim...
                     </>
                   ) : (
                     <>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3.5 w-3.5 sm:h-4 sm:w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
                         <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                       </svg>
                       Kirim

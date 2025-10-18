@@ -42,14 +42,14 @@ export default function SalaryDetailsPage() {
     isSubItem?: boolean;
   }) => (
     <div
-      className={`flex justify-between items-center ${
+      className={`flex justify-between items-center gap-2 ${
         isSubItem ? "pl-4" : ""
       } py-2`}
     >
       <span
         className={`${
           isSubItem
-            ? "text-sm text-gray-600"
+            ? "text-xs sm:text-sm text-gray-600"
             : "text-sm font-medium text-gray-800"
         }`}
         style={{ fontFamily: "Poppins, sans-serif" }}
@@ -59,9 +59,9 @@ export default function SalaryDetailsPage() {
       <span
         className={`${
           isSubItem
-            ? "text-sm text-gray-700"
+            ? "text-xs sm:text-sm text-gray-700 font-medium"
             : "text-sm font-semibold text-gray-900"
-        }`}
+        } whitespace-nowrap`}
         style={{ fontFamily: "Poppins, sans-serif" }}
       >
         {showAmount ? `Rp ${formatCurrency(amount)}` : "Rp ****"}
@@ -545,27 +545,12 @@ export default function SalaryDetailsPage() {
       </div>
 
       {/* Mobile Header Section with Gradient */}
-      <div
-        className="bg-gradient-hijau relative lg:hidden"
-        style={{
-          width: "100%",
-          maxWidth: "414px",
-          height: "160px",
-          borderRadius: "0 0 30px 30px",
-          margin: "0 auto",
-        }}
-      >
-        <div className="px-6 pt-12 pb-6 flex flex-col justify-center h-full">
+      <div className="bg-gradient-hijau relative lg:hidden w-full rounded-b-[30px]">
+        <div className="px-4 sm:px-6 pt-8 pb-5 flex flex-col justify-center">
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className="flex items-center justify-center mb-4 hover:scale-105 transition-transform duration-200"
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              backgroundColor: "white",
-            }}
+            className="flex items-center justify-center mb-3 hover:scale-105 active:scale-95 transition-transform duration-200 w-10 h-10 rounded-full bg-white"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -585,10 +570,9 @@ export default function SalaryDetailsPage() {
 
           {/* Title */}
           <h1
-            className="text-white font-bold"
+            className="text-white font-bold text-xl sm:text-2xl"
             style={{
               fontFamily: "Poppins, sans-serif",
-              fontSize: "22px",
               lineHeight: "1.2",
             }}
           >
@@ -598,22 +582,14 @@ export default function SalaryDetailsPage() {
       </div>
 
       {/* Mobile Content Section */}
-      <div className="px-6 pt-6 lg:hidden">
-        <div className="max-w-md mx-auto">
+      <div className="px-4 sm:px-6 pt-6 lg:hidden">
+        <div className="w-full max-w-md mx-auto">
           {/* Gaji Bersih Card - Main Result */}
           <div className="mb-4">
-            <div
-              className="relative p-6 text-white w-full bg-gradient-hijau"
-              style={{
-                height: "140px",
-                borderRadius: "15px",
-                maxWidth: "365px",
-                margin: "0 auto",
-              }}
-            >
+            <div className="relative p-5 sm:p-6 text-white w-full bg-gradient-hijau rounded-2xl">
               <div className="flex items-center justify-between mb-2">
                 <p
-                  className="text-sm font-normal"
+                  className="text-xs sm:text-sm font-normal"
                   style={{
                     fontFamily: "Poppins, sans-serif",
                   }}
@@ -647,7 +623,7 @@ export default function SalaryDetailsPage() {
                 </button>
               </div>
               <h2
-                className="text-4xl font-bold mb-2"
+                className="text-3xl sm:text-4xl font-bold mb-2"
                 style={{
                   fontFamily: "Poppins, sans-serif",
                 }}
@@ -672,15 +648,13 @@ export default function SalaryDetailsPage() {
             <div
               className="bg-white rounded-xl p-5 w-full"
               style={{
-                maxWidth: "365px",
-                margin: "0 auto",
                 boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
                 border: "1px solid #E0E0E0",
               }}
             >
               <div className="flex items-center mb-3">
                 <div
-                  className="bg-hijauterang/10 p-2 rounded-lg mr-3"
+                  className="bg-hijauterang/10 p-2 rounded-lg mr-3 flex-shrink-0"
                   style={{ width: "36px", height: "36px" }}
                 >
                   <svg
@@ -699,10 +673,9 @@ export default function SalaryDetailsPage() {
                   </svg>
                 </div>
                 <h3
-                  className="text-hijautua font-semibold"
+                  className="text-hijautua font-semibold text-base sm:text-lg"
                   style={{
                     fontFamily: "Poppins, sans-serif",
-                    fontSize: "16px",
                   }}
                 >
                   Gaji Pokok
@@ -724,15 +697,13 @@ export default function SalaryDetailsPage() {
             <div
               className="bg-white rounded-xl p-5 w-full"
               style={{
-                maxWidth: "365px",
-                margin: "0 auto",
                 boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
                 border: "1px solid #E0E0E0",
               }}
             >
               <div className="flex items-center mb-3">
                 <div
-                  className="bg-green-100 p-2 rounded-lg mr-3"
+                  className="bg-green-100 p-2 rounded-lg mr-3 flex-shrink-0"
                   style={{ width: "36px", height: "36px" }}
                 >
                   <svg
@@ -750,16 +721,15 @@ export default function SalaryDetailsPage() {
                   </svg>
                 </div>
                 <h3
-                  className="text-hijautua font-semibold flex-1"
+                  className="text-hijautua font-semibold flex-1 text-base sm:text-lg"
                   style={{
                     fontFamily: "Poppins, sans-serif",
-                    fontSize: "16px",
                   }}
                 >
                   Tunjangan
                 </h3>
                 <span
-                  className="text-green-600 font-bold text-sm"
+                  className="text-green-600 font-bold text-sm sm:text-base"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   +{" "}
@@ -797,23 +767,18 @@ export default function SalaryDetailsPage() {
           <div className="mb-4">
             <div
               className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 w-full border-2 border-blue-200"
-              style={{
-                maxWidth: "365px",
-                margin: "0 auto",
-              }}
             >
               <div className="flex justify-between items-center">
                 <span
-                  className="text-blue-900 font-semibold"
+                  className="text-blue-900 font-semibold text-sm sm:text-base"
                   style={{
                     fontFamily: "Poppins, sans-serif",
-                    fontSize: "15px",
                   }}
                 >
                   Total Gaji Kotor
                 </span>
                 <span
-                  className="text-blue-900 font-bold text-lg"
+                  className="text-blue-900 font-bold text-lg sm:text-xl"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   {showAmount
@@ -829,15 +794,13 @@ export default function SalaryDetailsPage() {
             <div
               className="bg-white rounded-xl p-5 w-full"
               style={{
-                maxWidth: "365px",
-                margin: "0 auto",
                 boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
                 border: "1px solid #E0E0E0",
               }}
             >
               <div className="flex items-center mb-3">
                 <div
-                  className="bg-red-100 p-2 rounded-lg mr-3"
+                  className="bg-red-100 p-2 rounded-lg mr-3 flex-shrink-0"
                   style={{ width: "36px", height: "36px" }}
                 >
                   <svg
@@ -856,16 +819,15 @@ export default function SalaryDetailsPage() {
                   </svg>
                 </div>
                 <h3
-                  className="text-hijautua font-semibold flex-1"
+                  className="text-hijautua font-semibold flex-1 text-base sm:text-lg"
                   style={{
                     fontFamily: "Poppins, sans-serif",
-                    fontSize: "16px",
                   }}
                 >
                   Potongan
                 </h3>
                 <span
-                  className="text-red-600 font-bold text-sm"
+                  className="text-red-600 font-bold text-sm sm:text-base"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   -{" "}
@@ -903,10 +865,6 @@ export default function SalaryDetailsPage() {
           <div className="mb-6">
             <div
               className="bg-gradient-hijau rounded-xl p-5 w-full text-white"
-              style={{
-                maxWidth: "365px",
-                margin: "0 auto",
-              }}
             >
               <h3
                 className="text-sm font-medium mb-4 opacity-90"

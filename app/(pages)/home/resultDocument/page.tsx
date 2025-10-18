@@ -853,9 +853,9 @@ export default function ResultDocumentPage() {
               </div>
             </div>
 
-            <div className="bg-white/95 backdrop-blur rounded-3xl shadow-lg border border-white/60 p-6 space-y-4">
+            <div className="bg-white/95 backdrop-blur rounded-3xl shadow-lg border border-white/60 p-4 sm:p-6 space-y-3 sm:space-y-4">
               <h2
-                className="text-lg font-semibold text-hijautua"
+                className="text-base sm:text-lg font-semibold text-hijautua"
                 style={{ fontFamily: "Poppins, sans-serif" }}
               >
                 Tanya AI
@@ -864,23 +864,23 @@ export default function ResultDocumentPage() {
                 Tanyakan hal-hal terkait hasil analisis dokumen Anda.
               </p>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {SUGGESTION_QUESTIONS.slice(0, 2).map((question) => (
                   <button
                     key={question}
                     onClick={() => {
                       setChatInput(question);
                     }}
-                    className="px-2.5 py-1.5 rounded-full border border-hijauterang text-hijauterang text-xs font-medium hover:bg-hijauterang/10 transition-colors"
+                    className="px-2 sm:px-2.5 py-1.5 rounded-full border border-hijauterang text-hijauterang text-[10px] sm:text-xs font-medium hover:bg-hijauterang/10 transition-colors whitespace-normal text-left"
                   >
                     {question}
                   </button>
                 ))}
               </div>
 
-              <div className="bg-gray-50/90 rounded-2xl border border-gray-100 shadow-inner h-[400px] overflow-y-auto p-4 space-y-3 scroll-smooth">
+              <div className="bg-gray-50/90 rounded-2xl border border-gray-100 shadow-inner h-[300px] sm:h-[400px] overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3 scroll-smooth">
                 {chatMessages.length === 0 ? (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     Belum ada percakapan. Mulai dengan pertanyaan cepat atau
                     tulis pesan Anda sendiri di bawah.
                   </p>
@@ -896,18 +896,18 @@ export default function ResultDocumentPage() {
                         }`}
                       >
                         <div
-                          className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
+                          className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm ${
                             message.role === "user"
                               ? "bg-hijauterang text-white"
                               : "bg-white text-gray-700 border border-gray-200"
                           }`}
                         >
                           {message.role === "assistant" ? (
-                            <div className="text-sm leading-relaxed prose prose-sm max-w-none">
+                            <div className="text-xs sm:text-sm leading-relaxed prose prose-sm max-w-none">
                               <ReactMarkdown
                                 components={{
                                   p: ({ node, ...props }) => (
-                                    <p {...props} className="mb-2 last:mb-0 break-words" />
+                                    <p {...props} className="mb-1.5 sm:mb-2 last:mb-0 break-words text-xs sm:text-sm" />
                                   ),
                                   strong: ({ node, ...props }) => (
                                     <strong {...props} className="font-bold text-hijautua" />
@@ -916,18 +916,18 @@ export default function ResultDocumentPage() {
                                     <em {...props} className="italic" />
                                   ),
                                   ul: ({ node, ...props }) => (
-                                    <ul {...props} className="list-none space-y-1 my-2" />
+                                    <ul {...props} className="list-none space-y-0.5 sm:space-y-1 my-1.5 sm:my-2 text-xs sm:text-sm" />
                                   ),
                                   ol: ({ node, ...props }) => (
-                                    <ol {...props} className="list-decimal ml-4 space-y-1 my-2 marker:text-hijauterang marker:font-semibold" />
+                                    <ol {...props} className="list-decimal ml-3 sm:ml-4 space-y-0.5 sm:space-y-1 my-1.5 sm:my-2 marker:text-hijauterang marker:font-semibold text-xs sm:text-sm" />
                                   ),
                                   li: ({ node, ...props }) => (
-                                    <li {...props} className="break-words" />
+                                    <li {...props} className="break-words text-xs sm:text-sm" />
                                   ),
                                   a: ({ node, ...props }) => (
                                     <a
                                       {...props}
-                                      className="text-hijauterang underline hover:text-hijautua"
+                                      className="text-hijauterang underline hover:text-hijautua text-xs sm:text-sm"
                                       target="_blank"
                                       rel="noopener noreferrer"
                                     />
@@ -936,28 +936,28 @@ export default function ResultDocumentPage() {
                                     inline ? (
                                       <code
                                         {...props}
-                                        className="px-1.5 py-0.5 bg-gray-100 text-hijautua rounded text-xs font-mono"
+                                        className="px-1 sm:px-1.5 py-0.5 bg-gray-100 text-hijautua rounded text-[10px] sm:text-xs font-mono"
                                       />
                                     ) : (
                                       <code
                                         {...props}
-                                        className="block p-2 bg-gray-100 text-gray-800 rounded text-xs font-mono overflow-x-auto my-2"
+                                        className="block p-1.5 sm:p-2 bg-gray-100 text-gray-800 rounded text-[10px] sm:text-xs font-mono overflow-x-auto my-1.5 sm:my-2"
                                       />
                                     ),
                                   blockquote: ({ node, ...props }) => (
                                     <blockquote
                                       {...props}
-                                      className="border-l-2 border-hijauterang/60 pl-3 my-2 italic text-gray-600"
+                                      className="border-l-2 border-hijauterang/60 pl-2 sm:pl-3 my-1.5 sm:my-2 italic text-gray-600 text-xs sm:text-sm"
                                     />
                                   ),
                                   h1: ({ node, ...props }) => (
-                                    <h1 {...props} className="text-base font-bold mt-3 mb-2 text-hijautua" />
+                                    <h1 {...props} className="text-sm sm:text-base font-bold mt-2 sm:mt-3 mb-1.5 sm:mb-2 text-hijautua" />
                                   ),
                                   h2: ({ node, ...props }) => (
-                                    <h2 {...props} className="text-sm font-bold mt-2 mb-1 text-hijautua" />
+                                    <h2 {...props} className="text-xs sm:text-sm font-bold mt-1.5 sm:mt-2 mb-1 text-hijautua" />
                                   ),
                                   h3: ({ node, ...props }) => (
-                                    <h3 {...props} className="text-sm font-semibold mt-2 mb-1 text-gray-800" />
+                                    <h3 {...props} className="text-xs sm:text-sm font-semibold mt-1.5 sm:mt-2 mb-1 text-gray-800" />
                                   ),
                                 }}
                               >
@@ -965,11 +965,11 @@ export default function ResultDocumentPage() {
                               </ReactMarkdown>
                             </div>
                           ) : (
-                            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                            <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words">
                               {message.content}
                             </p>
                           )}
-                          <span className="block text-[10px] opacity-70 mt-2">
+                          <span className="block text-[9px] sm:text-[10px] opacity-70 mt-1.5 sm:mt-2">
                             {new Date(message.createdAt).toLocaleTimeString(
                               "id-ID",
                               { hour: "2-digit", minute: "2-digit" }
@@ -980,14 +980,14 @@ export default function ResultDocumentPage() {
                     ))}
                     {isSendingChat && (
                       <div className="flex justify-start">
-                        <div className="max-w-[85%] rounded-2xl px-4 py-3 shadow-sm bg-white border border-gray-200">
-                          <div className="flex items-center gap-2">
-                            <div className="flex space-x-1">
-                              <div className="w-2 h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                              <div className="w-2 h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                              <div className="w-2 h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        <div className="max-w-[90%] sm:max-w-[85%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm bg-white border border-gray-200">
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <div className="flex space-x-0.5 sm:space-x-1">
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-hijauterang rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                             </div>
-                            <span className="text-xs text-gray-500">AI sedang mengetik...</span>
+                            <span className="text-[10px] sm:text-xs text-gray-500">AI sedang mengetik...</span>
                           </div>
                         </div>
                       </div>
@@ -998,10 +998,10 @@ export default function ResultDocumentPage() {
               </div>
 
               {chatError && (
-                <div className="bg-red-50 text-red-600 text-xs rounded-xl px-3 py-2 border border-red-100 flex items-start gap-2">
+                <div className="bg-red-50 text-red-600 text-[10px] sm:text-xs rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 border border-red-100 flex items-start gap-1.5 sm:gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 flex-shrink-0 mt-0.5"
+                    className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 mt-0.5"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -1015,20 +1015,20 @@ export default function ResultDocumentPage() {
                 </div>
               )}
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5 sm:gap-2">
                 <input
                   type="text"
                   value={chatInput}
                   onChange={(event) => setChatInput(event.target.value)}
                   onKeyDown={handleChatKeyDown}
                   placeholder="Tulis pertanyaan..."
-                  className="w-full rounded-full border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-hijauterang/50 disabled:bg-gray-100"
+                  className="w-full rounded-full border border-gray-200 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-hijauterang/50 disabled:bg-gray-100"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                   disabled={isSendingChat || !resolvedChatId}
                 />
                 <button
                   onClick={handleSendChat}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-hijauterang text-white px-4 py-2.5 text-sm font-semibold transition-transform hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
+                  className="w-full inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-hijauterang text-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-transform hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                   disabled={
                     isSendingChat ||
@@ -1038,7 +1038,7 @@ export default function ResultDocumentPage() {
                 >
                   {isSendingChat ? (
                     <>
-                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -1046,7 +1046,7 @@ export default function ResultDocumentPage() {
                     </>
                   ) : (
                     <>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                       </svg>
                       Kirim
@@ -1056,7 +1056,7 @@ export default function ResultDocumentPage() {
               </div>
 
               {!resolvedChatId && (
-                <p className="text-xs text-gray-500">
+                <p className="text-[10px] sm:text-xs text-gray-500">
                   ID sesi chat tidak ditemukan. Mulai ulang analisis untuk
                   melanjutkan percakapan.
                 </p>

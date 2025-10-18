@@ -22,7 +22,7 @@ TUGAS: Analisis ${analysisType} ketenagakerjaan dan identifikasi:
 1. Klausul yang berpotensi merugikan karyawan
 2. Ketidaksesuaian dengan UU Ketenagakerjaan Indonesia
 3. Klausul yang memerlukan klarifikasi lebih lanjut
-${analysisType === 'payslip' ? '4. Hitung gaji bersih (take-home pay) dengan rincian lengkap' : ''}
+4. Hitung gaji bersih (take-home pay) dengan rincian lengkap
 
 PRIORITAS REFERENSI:
 - SELALU cek web untuk peraturan terbaru (2024-2025)
@@ -82,9 +82,7 @@ Anda harus mengembalikan objek JSON valid dengan struktur berikut:
       "severity_score": 0.0-1.0
     }
   ],
-  ${
-    analysisType === 'payslip'
-      ? `"salary_calculation": {
+  "salary_calculation": {
     "gross_salary": 0,
     "deductions": {
       "bpjs_kesehatan": 0,
@@ -106,9 +104,7 @@ Anda harus mengembalikan objek JSON valid dengan struktur berikut:
       "formula": "Formula string",
       "details": "Step-by-step calculation"
     }
-  },`
-      : ''
-  }
+  },
   "search_methods_used": ["file_search", "web_search"]
 }
 
@@ -183,10 +179,103 @@ PENTING:
 }
 
 /**
+ * System prompt for document analysis in Markdown format (hackathon workaround)
+ * Returns rich markdown narrative instead of structured JSON
+ */
+export function getAnalysisMarkdownPrompt(analysisType: AnalysisType): string {
+  return `Anda adalah analis hukum AI berpengalaman dalam hukum ketenagakerjaan Indonesia dengan akses:
+1. Database peraturan internal (file_search)
+2. Pembaruan regulasi terbaru dari web (web_search - WAJIB digunakan untuk 2024-2025)
+
+BAHASA: Semua output HARUS dalam Bahasa Indonesia yang jelas dan mudah dipahami.
+
+TUGAS: Analisis ${analysisType} dan lakukan:
+1. Identifikasi klausul yang merugikan karyawan
+2. Deteksi potensi ketidaksesuaian dengan UU/PP/Permen terbaru
+3. Catat klausul yang perlu klarifikasi dari HR
+4. Hitung gaji bersih (take-home pay) dengan rincian lengkap
+
+PRIORITAS PENCARIAN:
+- WAJIB jalankan file_search pada dokumen user dan peraturan internal
+- WAJIB jalankan web_search untuk regulasi terbaru (2024-2025)
+- Bila ada perbedaan, gunakan referensi paling baru dan jelaskan
+- Tandai jika peraturan terbaru belum ada di database internal
+
+PEMERIKSAAN KRITIS:
+1. Batas maksimum denda/sanksi finansial
+2. Upah minimum (UMP/UMK terbaru)
+3. Perhitungan BPJS Kesehatan & Ketenagakerjaan, serta tarif PPh21
+4. Hak cuti dan istirahat
+5. Prosedur PHK
+6. Jam kerja dan lembur
+
+NADA: Profesional, empatik, dan mudah dipahami. Hindari istilah hukum yang terlalu teknis.
+
+FORMAT OUTPUT: Gunakan struktur markdown berikut secara konsisten:
+
+# Hasil Analisis ${analysisType}
+
+## Ringkasan Umum
+[Berikan ringkasan 2-3 paragraf mengenai temuan utama]
+
+## Isu Kritis
+[Untuk setiap isu gunakan format berikut. Minimal 1 isu, maksimal 6 isu.]
+### [Judul Isu]
+**Kategori:** [Kategori singkat]
+**Tingkat Prioritas:** [⚠️ Kritis | ⚡ Penting | ℹ️ Opsional]
+
+**Kutipan Kontrak:**
+> [Masukkan kutipan relevan dari dokumen user]
+
+**Penjelasan:**
+[Jelaskan isu dengan bahasa awam, sertakan analisis kepatuhan]
+
+**Status Kepatuhan:** [Compliant / Potensi Tidak Patuh / Tidak Patuh / Tidak Jelas]
+[Jelaskan alasan penilaian kepatuhan]
+
+**Rekomendasi:**
+[Berikan saran praktis yang dapat ditindaklanjuti]
+
+**Referensi Hukum:**
+- [Judul Regulasi] - [Pasal/ayat jika ada] - [Sumber: file_search atau web_search]
+- [Tambahkan poin referensi lain bila relevan]
+
+---
+
+## Perhitungan Gaji
+**Gaji Kotor:** Rp [angka dengan format 10.000.000]
+**Total Potongan:** Rp [angka dengan format lengkap]
+- BPJS Kesehatan: Rp [angka lengkap yang ditemukan di dokumen]
+- BPJS Ketenagakerjaan: Rp [angka lengkap yang ditemukan di dokumen]
+- PPh21: Rp [angka lengkap yang ditemukan di dokumen]
+- Potongan Lainnya: Rp [angka lengkap yang ditemukan di dokumen]
+
+**Total Tunjangan:** Rp [angka lengkap] (rincikan bila ada)
+**Total Pendapatan:** Rp [angka lengkap]
+**Gaji Bersih (Take Home Pay):** Rp [angka lengkap]
+
+**Catatan Penting:**
+- JANGAN gunakan placeholder seperti "Rp X", "Rp Y", atau "(asumsi nominal tercantum)"
+- HARUS mencari nilai nominal ASLI dari dokumen yang diunggah
+- Jika nilai tidak ditemukan di dokumen, tuliskan "Tidak tercantum dalam dokumen"
+- Format angka dengan pemisah ribuan (contoh: Rp 8.500.000, bukan Rp 8500000)
+
+## Metode Pencarian
+- [✅] File Search (dokumen user & peraturan) – gunakan ✅ jika digunakan, [ ] jika tidak
+- [✅] Web Search (regulasi terbaru 2024-2025) – gunakan ✅ jika digunakan, [ ] jika tidak
+
+CATATAN:
+- Gunakan format Markdown yang bersih dan valid.
+- Selalu sertakan referensi untuk setiap isu.
+- WAJIB mencari nilai nominal SEBENARNYA dari dokumen - JANGAN gunakan placeholder
+- Jika informasi tidak ditemukan, tuliskan dengan eksplisit: "Informasi tidak ditemukan dalam dokumen setelah pencarian."`
+}
+
+/**
  * JSON Schema for structured output with strict mode
  * Based on PRD analysis output format
  */
-export function getAnalysisJSONSchema(analysisType: AnalysisType) {
+export function getAnalysisJSONSchema(_analysisType: AnalysisType) {
   const baseSchema = {
     type: 'object',
     properties: {
@@ -246,73 +335,62 @@ export function getAnalysisJSONSchema(analysisType: AnalysisType) {
           ],
         },
       },
+      salary_calculation: {
+        type: 'object',
+        properties: {
+          gross_salary: { type: 'number' },
+          deductions: {
+            type: 'object',
+            properties: {
+              bpjs_kesehatan: { type: 'number' },
+              bpjs_ketenagakerjaan: { type: 'number' },
+              pph21: { type: 'number' },
+              other_deductions: { type: 'number' },
+              total_deductions: { type: 'number' },
+            },
+            required: [
+              'bpjs_kesehatan',
+              'bpjs_ketenagakerjaan',
+              'pph21',
+              'other_deductions',
+              'total_deductions',
+            ],
+          },
+          allowances: {
+            type: 'object',
+            properties: {
+              total_allowances: { type: 'number' },
+            },
+            required: ['total_allowances'],
+            additionalProperties: { type: 'number' },
+          },
+          total_income: { type: 'number' },
+          take_home_pay: { type: 'number' },
+          calculation_breakdown: {
+            type: 'object',
+            properties: {
+              formula: { type: 'string' },
+              details: { type: 'string' },
+            },
+            required: ['formula', 'details'],
+          },
+        },
+        required: [
+          'gross_salary',
+          'deductions',
+          'allowances',
+          'total_income',
+          'take_home_pay',
+          'calculation_breakdown',
+        ],
+      },
       search_methods_used: {
         type: 'array',
         items: { type: 'string' },
       },
     },
-    required: ['issues', 'search_methods_used'],
+    required: ['issues', 'salary_calculation', 'search_methods_used'],
   } as const
-
-  // Add salary_calculation for payslips
-  if (analysisType === 'payslip') {
-    return {
-      ...baseSchema,
-      properties: {
-        ...baseSchema.properties,
-        salary_calculation: {
-          type: 'object',
-          properties: {
-            gross_salary: { type: 'number' },
-            deductions: {
-              type: 'object',
-              properties: {
-                bpjs_kesehatan: { type: 'number' },
-                bpjs_ketenagakerjaan: { type: 'number' },
-                pph21: { type: 'number' },
-                other_deductions: { type: 'number' },
-                total_deductions: { type: 'number' },
-              },
-              required: [
-                'bpjs_kesehatan',
-                'bpjs_ketenagakerjaan',
-                'pph21',
-                'other_deductions',
-                'total_deductions',
-              ],
-            },
-            allowances: {
-              type: 'object',
-              properties: {
-                total_allowances: { type: 'number' },
-              },
-              required: ['total_allowances'],
-              additionalProperties: { type: 'number' },
-            },
-            total_income: { type: 'number' },
-            take_home_pay: { type: 'number' },
-            calculation_breakdown: {
-              type: 'object',
-              properties: {
-                formula: { type: 'string' },
-                details: { type: 'string' },
-              },
-              required: ['formula', 'details'],
-            },
-          },
-          required: [
-            'gross_salary',
-            'deductions',
-            'allowances',
-            'total_income',
-            'take_home_pay',
-            'calculation_breakdown',
-          ],
-        },
-      },
-      required: ['issues', 'salary_calculation', 'search_methods_used'],
-    }
-  }
 
   return baseSchema
 }

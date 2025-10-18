@@ -259,13 +259,16 @@ export default function AuthenticationPage() {
         <div className="relative z-10 flex flex-col min-h-screen">
           {/* Header Content */}
           <div className="flex-1 flex flex-col justify-end p-6">
-            <div className="text-white text-left">
-              <div className="flex items-center gap-3 mb-4 mt-5">
-                <img
+            <div className="text-white text-left "> <div className="justify-between flex ">
+              <img
                   src="/icon/icon-notext.svg"
                   alt="GajiBersih Icon"
                   className="w-10 h-10"
                 />
+              <a href="/" className="underline text-white">Back</a>
+              </div>
+              <div className="flex items-center gap-3 mb-4 mt-2">
+                
                 <h1
                   className="text-2xl font-semibold leading-tight"
                   style={{ fontFamily: "Poppins, sans-serif" }}
@@ -890,6 +893,7 @@ export default function AuthenticationPage() {
           <div className="w-full max-w-md">
             {/* Logo/Brand */}
             <div className="mb-6">
+              <a href="/" className="underline text-white">Back</a>
               <h1
                 className="text-3xl font-bold text-hijautua mb-2"
                 style={{ fontFamily: "Poppins, sans-serif" }}

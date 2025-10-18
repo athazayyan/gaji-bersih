@@ -7,19 +7,70 @@ import { motion } from "framer-motion";
 import GradientCard from "@/app/components/GradientCard";
 import DocumentItem from "@/app/components/DocumentItem";
 import HorizontalNavbar from "@/app/components/HorizontalNavbar";
+import { supabase } from "@/lib/supabase/client";
+
+
+ interface UserProfile {
+    full_name: string;
+    avatar_path: string | null;
+  }
 
 export default function HomePage() {
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [data, setData] = useState<UserProfile | null>(null);
 
-  // Update time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+ 
 
-    return () => clearInterval(timer);
-  }, []);
+   const fetchUserProfile = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("full_name, avatar_path")
+          .eq("id", user.id)
+          .single();
+  
+        // Convert avatar_path to full public URL if it exists
+        if (data && data.avatar_path) {
+          const { data: urlData } = supabase.storage
+            .from("avatars")
+            .getPublicUrl(data.avatar_path);
+  
+          return {
+            full_name: data.full_name,
+            avatar_path: urlData.publicUrl,
+          };
+        }
+  
+        return data;
+      }
+      return null;
+    };
+  
+    useEffect(() => {
+      fetchUserProfile().then((result) => {
+        // Only set data if result is a valid user profile object
+        if (
+          result &&
+          typeof result === "object" &&
+          "full_name" in result &&
+          "avatar_path" in result
+        ) {
+          setData(result as UserProfile);
+        } else {
+          setData(null);
+        }
+      });
+  
+      // Update time every second
+      const timer = setInterval(() => {
+        setCurrentTime(new Date());
+      }, 1000);
+      return () => clearInterval(timer); // Clear the timer on component unmount
+    }, []); // Closing the useEffect hook properly
 
   // Format functions
   const formatDay = (date: Date) => {
@@ -100,7 +151,7 @@ export default function HomePage() {
                   lineHeight: "1.2",
                 }}
               >
-                Username
+                {data?.full_name}!
               </h1>
             </div>
             <div
@@ -111,7 +162,7 @@ export default function HomePage() {
               }}
             >
               <Image
-                src="/dummy/dummyProfil.png"
+                src={data?.avatar_path || "/dummy/dummyProfil.png"}
                 alt="Profile"
                 width={56}
                 height={56}
@@ -270,7 +321,7 @@ export default function HomePage() {
               className="text-4xl font-bold text-hijautua mb-2"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
-              Selamat Datang, Username! 👋
+              Selamat Datang, {data?.full_name}!
             </h1>
             <p
               className="text-hijautua opacity-70 text-lg"
@@ -505,4 +556,4 @@ export default function HomePage() {
       </div>
     </>
   );
-}
+};

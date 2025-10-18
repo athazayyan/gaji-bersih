@@ -180,16 +180,16 @@ export default function ScanningPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden"
+      className="min-h-screen flex flex-col items-center justify-center px-6 lg:px-12 xl:px-20 relative overflow-hidden"
       style={{
         background: "var(--gradient-scanning)",
       }}
     >
       {/* Typing Text Animation */}
-      <div className="mb-12 relative z-10">
-        <div className="flex items-center justify-center gap-3">
+      <div className="mb-12 lg:mb-12 relative z-10">
+        <div className="flex items-center justify-center gap-3 lg:gap-4">
           <h1
-            className={`text-white text-center font-bold transition-all duration-500 ${
+            className={`text-white text-center font-bold transition-all duration-500 lg:text-3xl xl:text-4xl ${
               scanningComplete ? "scale-110" : "scale-100"
             }`}
             style={{
@@ -218,7 +218,7 @@ export default function ScanningPage() {
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="animate-bounce"
+              className="animate-bounce lg:w-9 lg:h-9"
               style={{
                 filter: "drop-shadow(0 0 10px rgba(177, 219, 156, 0.8))",
               }}
@@ -231,15 +231,15 @@ export default function ScanningPage() {
       </div>
 
       {/* Document Preview with Scanning Animation */}
-      <div className="relative mb-12 z-10">
+      <div className="relative mb-12 lg:mb-12 z-10">
         {/* Document Frame with Modern Corner Brackets */}
         <div className="relative">
           {/* Corner Brackets - Enhanced Modern Design */}
           <div className="absolute -inset-5 z-10">
             {/* Top Left */}
-            <div className="absolute top-0 left-0 w-10 h-10">
+            <div className="absolute top-0 left-0 w-10 h-10 lg:w-14 lg:h-14">
               <div
-                className="absolute top-0 left-0 w-8 h-1.5 rounded-full"
+                className="absolute top-0 left-0 w-8 h-1.5 lg:w-11 lg:h-2 rounded-full"
                 style={{
                   background:
                     "linear-gradient(90deg, #B0DB9C 0%, #77BF5A 100%)",
@@ -248,7 +248,7 @@ export default function ScanningPage() {
                 }}
               ></div>
               <div
-                className="absolute top-0 left-0 w-1.5 h-8 rounded-full"
+                className="absolute top-0 left-0 w-1.5 h-8 lg:w-2 lg:h-11 rounded-full"
                 style={{
                   background:
                     "linear-gradient(180deg, #B0DB9C 0%, #77BF5A 100%)",
@@ -258,9 +258,9 @@ export default function ScanningPage() {
               ></div>
             </div>
             {/* Top Right */}
-            <div className="absolute top-0 right-0 w-10 h-10">
+            <div className="absolute top-0 right-0 w-10 h-10 lg:w-14 lg:h-14">
               <div
-                className="absolute top-0 right-0 w-8 h-1.5 rounded-full"
+                className="absolute top-0 right-0 w-8 h-1.5 lg:w-11 lg:h-2 rounded-full"
                 style={{
                   background:
                     "linear-gradient(270deg, #B0DB9C 0%, #77BF5A 100%)",
@@ -269,7 +269,7 @@ export default function ScanningPage() {
                 }}
               ></div>
               <div
-                className="absolute top-0 right-0 w-1.5 h-8 rounded-full"
+                className="absolute top-0 right-0 w-1.5 h-8 lg:w-2 lg:h-11 rounded-full"
                 style={{
                   background:
                     "linear-gradient(180deg, #B0DB9C 0%, #77BF5A 100%)",
@@ -279,9 +279,9 @@ export default function ScanningPage() {
               ></div>
             </div>
             {/* Bottom Left */}
-            <div className="absolute bottom-0 left-0 w-10 h-10">
+            <div className="absolute bottom-0 left-0 w-10 h-10 lg:w-14 lg:h-14">
               <div
-                className="absolute bottom-0 left-0 w-8 h-1.5 rounded-full"
+                className="absolute bottom-0 left-0 w-8 h-1.5 lg:w-11 lg:h-2 rounded-full"
                 style={{
                   background:
                     "linear-gradient(90deg, #B0DB9C 0%, #77BF5A 100%)",
@@ -290,7 +290,7 @@ export default function ScanningPage() {
                 }}
               ></div>
               <div
-                className="absolute bottom-0 left-0 w-1.5 h-8 rounded-full"
+                className="absolute bottom-0 left-0 w-1.5 h-8 lg:w-2 lg:h-11 rounded-full"
                 style={{
                   background: "linear-gradient(0deg, #B0DB9C 0%, #77BF5A 100%)",
                   boxShadow:
@@ -299,9 +299,9 @@ export default function ScanningPage() {
               ></div>
             </div>
             {/* Bottom Right */}
-            <div className="absolute bottom-0 right-0 w-10 h-10">
+            <div className="absolute bottom-0 right-0 w-10 h-10 lg:w-14 lg:h-14">
               <div
-                className="absolute bottom-0 right-0 w-8 h-1.5 rounded-full"
+                className="absolute bottom-0 right-0 w-8 h-1.5 lg:w-11 lg:h-2 rounded-full"
                 style={{
                   background:
                     "linear-gradient(270deg, #B0DB9C 0%, #77BF5A 100%)",
@@ -310,7 +310,7 @@ export default function ScanningPage() {
                 }}
               ></div>
               <div
-                className="absolute bottom-0 right-0 w-1.5 h-8 rounded-full"
+                className="absolute bottom-0 right-0 w-1.5 h-8 lg:w-2 lg:h-11 rounded-full"
                 style={{
                   background: "linear-gradient(0deg, #B0DB9C 0%, #77BF5A 100%)",
                   boxShadow:
@@ -322,7 +322,7 @@ export default function ScanningPage() {
 
           {/* Document Container */}
           <div
-            className="bg-white rounded-xl overflow-hidden relative"
+            className="bg-white rounded-xl overflow-hidden relative lg:w-[400px] lg:h-[560px] lg:rounded-2xl"
             style={{
               width: "300px",
               height: "420px",
@@ -577,14 +577,14 @@ export default function ScanningPage() {
 
       {/* Bottom Action Button - Only show when complete */}
       {scanningComplete && (
-        <div className="w-full max-w-sm relative z-10 animate-fade-in">
+        <div className="w-full max-w-sm lg:max-w-md relative z-10 animate-fade-in">
           <button
             onClick={() => {
               // Navigate to results page
               console.log("Analysis data ready:", analysisData);
               router.push("/home/resultDocument");
             }}
-            className="w-full bg-white text-hijautua font-semibold py-4 rounded-full transition-all duration-300 hover:scale-105"
+            className="w-full bg-white text-hijautua font-semibold py-4 lg:py-5 lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl"
             style={{
               fontFamily: "Poppins, sans-serif",
               fontSize: "16px",
@@ -599,9 +599,9 @@ export default function ScanningPage() {
 
       {/* Loading Dots Animation - Only show when scanning */}
       {!scanningComplete && (
-        <div className="flex space-x-3 mt-8 relative z-10">
+        <div className="flex space-x-3 lg:space-x-4 mt-8 lg:mt-10 relative z-10">
           <div
-            className="w-2.5 h-2.5 rounded-full animate-bounce"
+            className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full animate-bounce"
             style={{
               animationDelay: "0ms",
               background: "#B0DB9C",
@@ -609,7 +609,7 @@ export default function ScanningPage() {
             }}
           ></div>
           <div
-            className="w-2.5 h-2.5 rounded-full animate-bounce"
+            className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full animate-bounce"
             style={{
               animationDelay: "150ms",
               background: "#B0DB9C",
@@ -617,7 +617,7 @@ export default function ScanningPage() {
             }}
           ></div>
           <div
-            className="w-2.5 h-2.5 rounded-full animate-bounce"
+            className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full animate-bounce"
             style={{
               animationDelay: "300ms",
               background: "#B0DB9C",

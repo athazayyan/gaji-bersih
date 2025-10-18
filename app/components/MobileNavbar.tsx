@@ -65,14 +65,71 @@ const navItems: NavItem[] = [
   },
 ];
 
+const adminNavItems: NavItem[] = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    path: "/admin",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="20px"
+        viewBox="0 -960 960 960"
+        width="20px"
+        fill="currentColor"
+      >
+        <path d="M180-120q-25 0-42.5-17.5T120-180v-76l160-142v278H180Zm140 0v-160h320v160H320Zm360 0v-328L509-600l121-107 190 169q10 9 15 20.5t5 24.5v313q0 25-17.5 42.5T780-120H680ZM120-310v-183q0-13 5-25t15-20l300-266q8-8 18.5-11.5T480-819q11 0 21.5 3.5T520-804l80 71-480 423Z" />
+      </svg>
+    ),
+  },
+  {
+    id: "upload",
+    label: "Upload",
+    path: "/admin/upload-regulasi",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="20px"
+        viewBox="0 -960 960 960"
+        width="20px"
+        fill="currentColor"
+      >
+        <path d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" />
+      </svg>
+    ),
+  },
+  {
+    id: "manage",
+    label: "Manage",
+    path: "/admin/manage-regulasi",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="20px"
+        viewBox="0 -960 960 960"
+        width="20px"
+        fill="currentColor"
+      >
+        <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h240l80 80h320q33 0 56.5 23.5T880-640v400q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H447l-80-80H160v480Zm0 0v-480 480Z" />
+      </svg>
+    ),
+  },
+];
+
 export default function MobileNavbar({ className }: MobileNavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // Hide navbar on upload, scanning, result pages, and auth pages
+  // Determine if we're on admin pages
+  const isAdminPage = pathname.includes("/admin");
+
+  // Use appropriate nav items based on page type
+  const currentNavItems = isAdminPage ? adminNavItems : navItems;
+
+  // Hide navbar on upload, scanning, result pages, and auth pages (but not admin pages)
   const shouldHideNavbar =
     pathname.includes("/uploadBerkas") ||
-    pathname.includes("/upload") ||
+    (pathname.includes("/upload") && !pathname.includes("/admin")) ||
     pathname.includes("/scanning") ||
     pathname.includes("/resultDocument") ||
     pathname.includes("/resultConsul") ||
@@ -96,11 +153,11 @@ export default function MobileNavbar({ className }: MobileNavbarProps) {
         className="mx-auto max-w-sm bg-white/95 backdrop-blur-xl rounded-full shadow-2xl border border-gray-200/30"
         style={{
           boxShadow:
-            "0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)",
+            "0 20px 60px rgba(47, 158, 116, 0.12), 0 8px 24px rgba(33, 56, 19, 0.08)",
         }}
       >
         <div className="flex items-center justify-around px-3 py-2">
-          {navItems.map((item) => {
+          {currentNavItems.map((item) => {
             const isActive = pathname === item.path;
 
             return (
@@ -114,7 +171,7 @@ export default function MobileNavbar({ className }: MobileNavbarProps) {
                   ${
                     isActive
                       ? "text-white transform scale-110 shadow-xl"
-                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100/80 hover:scale-105"
+                      : "text-hijaudaun hover:text-hijauterang hover:bg-hijaumuda/20 hover:scale-105"
                   }
                 `}
                 style={{
@@ -124,9 +181,10 @@ export default function MobileNavbar({ className }: MobileNavbarProps) {
                 {/* Background gradient when active */}
                 {isActive && (
                   <div
-                    className="absolute inset-0 bg-gradient-hijau rounded-full"
+                    className="absolute inset-0 bg-hijauterang rounded-full"
                     style={{
-                      background: "var(--gradient-hijau)",
+                      background:
+                        "linear-gradient(135deg, var(--hijauterang) 0%, var(--hijaudaun) 100%)",
                     }}
                   />
                 )}
@@ -148,7 +206,7 @@ export default function MobileNavbar({ className }: MobileNavbarProps) {
                       ${
                         isActive
                           ? "text-white opacity-100"
-                          : "text-gray-400 opacity-80"
+                          : "text-hijaudaun opacity-80"
                       }
                     `}
                   >
@@ -159,7 +217,7 @@ export default function MobileNavbar({ className }: MobileNavbarProps) {
                 {/* Hover effect */}
                 <div
                   className={`
-                    absolute inset-0 bg-gray-100 rounded-full 
+                    absolute inset-0 bg-hijaumuda/30 rounded-full 
                     transition-all duration-300 ease-out
                     ${
                       !isActive
@@ -174,7 +232,8 @@ export default function MobileNavbar({ className }: MobileNavbarProps) {
                   <div
                     className="absolute inset-0 rounded-full blur-xl opacity-25 scale-125 animate-pulse"
                     style={{
-                      background: "var(--gradient-hijau)",
+                      background:
+                        "linear-gradient(135deg, var(--hijauterang) 0%, var(--hijaudaun) 100%)",
                     }}
                   />
                 )}

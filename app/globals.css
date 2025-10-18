@@ -82,6 +82,7 @@
 
 /* If you use Tailwind's @theme, you can map CSS vars to tokens here. Removed to avoid editor lint errors. */
 
+/* Force light mode for desktop - no dark background */
 @media (prefers-color-scheme: dark) {
   :root {
     /* Optional: tweak primary for dark mode */
@@ -160,6 +161,30 @@ a:hover {
 
 .scan-line {
   animation: scanLine 4s ease-in-out infinite;
+}
+
+/* Desktop layout with resizable sidebar */
+@media (min-width: 1024px) {
+  .desktop-content {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease-in-out;
+  }
+
+  .desktop-content-collapsed {
+    margin-left: 80px;
+    transition: margin-left 0.3s ease-in-out;
+  }
+}
+
+/* Smooth transitions for bento grid items */
+.bento-item {
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.bento-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Typing cursor animation */

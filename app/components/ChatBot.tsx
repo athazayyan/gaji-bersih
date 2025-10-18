@@ -10,10 +10,11 @@ interface ChatMessage {
 }
 
 interface ChatBotProps {
+  chat_id?: string;
   className?: string;
 }
 
-export default function ChatBot({ className }: ChatBotProps) {
+export default function ChatBot({ chat_id, className }: ChatBotProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",

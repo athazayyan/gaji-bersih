@@ -11,7 +11,10 @@ export default function UploadBerkasPage() {
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [chatSession, setChatSession] = useState<{chat_id: string, expires_at: string} | null>(null);
+  const [chatSession, setChatSession] = useState<{
+    chat_id: string;
+    expires_at: string;
+  } | null>(null);
 
   // Initialize chat session when component mounts
   useEffect(() => {
@@ -33,8 +36,13 @@ export default function UploadBerkasPage() {
       }
 
       const data = await response.json();
-      setChatSession(data.session);
-      console.log("Chat session created:", data.session);
+      // API returns chat_id and expires_at directly (not nested under "session")
+      const sessionData = {
+        chat_id: data.chat_id,
+        expires_at: data.expires_at,
+      };
+      setChatSession(sessionData);
+      console.log("Chat session created:", sessionData);
     } catch (error) {
       console.error("Error initializing chat session:", error);
       setUploadError("Gagal membuat sesi chat. Silakan refresh halaman.");
@@ -107,7 +115,9 @@ export default function UploadBerkasPage() {
     }
 
     if (!chatSession) {
-      setUploadError("Sesi chat belum siap. Silakan tunggu atau refresh halaman.");
+      setUploadError(
+        "Sesi chat belum siap. Silakan tunggu atau refresh halaman."
+      );
       return;
     }
 
@@ -147,7 +157,7 @@ export default function UploadBerkasPage() {
 
       // Save to sessionStorage (more secure than localStorage)
       sessionStorage.setItem("pendingAnalysis", JSON.stringify(analysisData));
-      
+
       // Save preview data for scanning page
       if (filePreview) {
         sessionStorage.setItem("uploadedFile", filePreview);
@@ -156,11 +166,18 @@ export default function UploadBerkasPage() {
       sessionStorage.setItem("uploadedFileName", selectedFile.name);
 
       // Navigate to scanning page
-      console.log("Navigating to scanning page with document_id:", uploadData.document.id);
+      console.log(
+        "Navigating to scanning page with document_id:",
+        uploadData.document.id
+      );
       router.push("/home/scanning");
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadError(error instanceof Error ? error.message : "Gagal mengunggah file. Silakan coba lagi.");
+      setUploadError(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengunggah file. Silakan coba lagi."
+      );
       setIsUploading(false);
     }
   };
@@ -462,7 +479,7 @@ export default function UploadBerkasPage() {
 
             {/* Error Message */}
             {uploadError && (
-              <div 
+              <div
                 className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl"
                 style={{
                   fontFamily: "Poppins, sans-serif",
@@ -845,7 +862,7 @@ export default function UploadBerkasPage() {
 
                       {/* Error Message - Desktop */}
                       {uploadError && (
-                        <div 
+                        <div
                           className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl"
                           style={{
                             fontFamily: "Poppins, sans-serif",

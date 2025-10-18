@@ -66,7 +66,9 @@ export default function ScanningPage() {
       }
     } else {
       console.error("No pending analysis data found");
-      setAnalysisError("Tidak ada data untuk dianalisis. Silakan upload file terlebih dahulu.");
+      setAnalysisError(
+        "Tidak ada data untuk dianalisis. Silakan upload file terlebih dahulu."
+      );
       setScanningComplete(true);
     }
   }, []);
@@ -95,18 +97,20 @@ export default function ScanningPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || errorData.message || "Gagal menganalisis dokumen");
+        throw new Error(
+          errorData.error || errorData.message || "Gagal menganalisis dokumen"
+        );
       }
 
       const result = await response.json();
       console.log("Analysis result:", result);
 
-      // Store analysis ID for navigation
-      setAnalysisId(result.analysis.id);
+      // Store analysis ID and chat_id for navigation
+      setAnalysisId(result.analysis_id);
 
-      // Transform backend response to match frontend format
-      const transformedData = transformAnalysisData(result.analysis);
-      setAnalysisData(transformedData);
+      // Store the COMPLETE backend response (already in correct format)
+      // API returns: { analysis_id, chat_id, summary, issues, salary_calculation, ... }
+      setAnalysisData(result);
       setScanningComplete(true);
 
       // Clear pending analysis data
@@ -118,35 +122,12 @@ export default function ScanningPage() {
     } catch (error) {
       console.error("Analysis error:", error);
       setAnalysisError(
-        error instanceof Error ? error.message : "Gagal menganalisis dokumen. Silakan coba lagi."
+        error instanceof Error
+          ? error.message
+          : "Gagal menganalisis dokumen. Silakan coba lagi."
       );
       setScanningComplete(true);
     }
-  };
-
-  // Transform backend analysis result to frontend format
-  const transformAnalysisData = (analysis: any) => {
-    // Extract data from analysis.result
-    const result = analysis.result || {};
-    
-    return {
-      gajiPokok: result.salary?.base_salary || 0,
-      tunjangan: {
-        kesehatan: result.salary?.allowances?.health || 0,
-        transport: result.salary?.allowances?.transportation || 0,
-        makan: result.salary?.allowances?.meal || 0,
-        ...result.salary?.allowances,
-      },
-      potongan: {
-        bpjs: result.salary?.deductions?.bpjs || 0,
-        pajak: result.salary?.deductions?.tax || 0,
-        ...result.salary?.deductions,
-      },
-      gajiBersih: result.salary?.net_salary || result.salary?.take_home_pay || 0,
-      issues: result.issues || [],
-      compliance: result.compliance || {},
-      summary: result.summary || analysis.summary || "",
-    };
   };
 
   // Typing animation effect
@@ -659,7 +640,10 @@ export default function ScanningPage() {
             // Error state - show retry button
             <div className="space-y-4">
               <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-                <p className="text-red-600 text-center text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>
+                <p
+                  className="text-red-600 text-center text-sm"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
                   {analysisError}
                 </p>
               </div>
@@ -669,7 +653,8 @@ export default function ScanningPage() {
                 style={{
                   fontFamily: "Poppins, sans-serif",
                   fontSize: "16px",
-                  boxShadow: "0 0 20px rgba(239, 68, 68, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2)",
+                  boxShadow:
+                    "0 0 20px rgba(239, 68, 68, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2)",
                 }}
               >
                 Coba Lagi
@@ -679,24 +664,61 @@ export default function ScanningPage() {
             // Success state - show view results button
             <button
               onClick={() => {
-                // Store analysis data for results page
+                // Store full analysis result for resultConsul page
                 if (analysisData) {
-                  sessionStorage.setItem("currentAnalysisData", JSON.stringify(analysisData));
+                  // Store complete backend response (includes chat_id, analysis_id, issues, summary, etc.)
+                  sessionStorage.setItem(
+                    "currentAnalysisData",
+                    JSON.stringify(analysisData)
+                  );
+                  console.log(
+                    "[Navigation] Stored analysis data to sessionStorage:",
+                    analysisData
+                  );
+
+                  // Store chat_id separately for easy access
+                  if (analysisData.chat_id) {
+                    sessionStorage.setItem(
+                      "currentChatId",
+                      analysisData.chat_id
+                    );
+                    console.log(
+                      "[Navigation] Stored chat_id:",
+                      analysisData.chat_id
+                    );
+                  }
+
+                  // Store analysis_id separately
+                  if (analysisData.analysis_id) {
+                    sessionStorage.setItem(
+                      "currentAnalysisId",
+                      analysisData.analysis_id
+                    );
+                    console.log(
+                      "[Navigation] Stored analysis_id:",
+                      analysisData.analysis_id
+                    );
+                  }
+                } else {
+                  console.error(
+                    "[Navigation] analysisData is null! Cannot navigate."
+                  );
+                  return;
                 }
-                if (analysisId) {
-                  sessionStorage.setItem("currentAnalysisId", analysisId);
-                }
-                console.log("Navigating to results with analysis:", analysisData);
-                router.push("/home/resultDocument");
+
+                // Navigate to resultConsul page (not resultDocument)
+                console.log("[Navigation] Redirecting to /home/resultConsul");
+                router.push("/home/resultConsul");
               }}
               className="w-full bg-white text-hijautua font-semibold py-4 lg:py-5 lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl"
               style={{
                 fontFamily: "Poppins, sans-serif",
                 fontSize: "16px",
-                boxShadow: "0 0 20px rgba(177, 219, 156, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2)",
+                boxShadow:
+                  "0 0 20px rgba(177, 219, 156, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2)",
               }}
             >
-              Lihat Hasil
+              Lihat Hasil Konsultasi
             </button>
           )}
         </div>

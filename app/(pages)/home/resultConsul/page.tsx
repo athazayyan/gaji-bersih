@@ -1,52 +1,190 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AlertCard, { AlertLevel } from "@/app/components/AlertCard";
 import AnalysisDetailCard from "@/app/components/AnalysisDetailCard";
-import GradientCard from "@/app/components/GradientCard";
 import ChatBot from "@/app/components/ChatBot";
 
-// Dummy data - nanti akan diganti dengan data dari backend AI
-const dummyAnalysisData = {
-  alertLevel: "warning" as AlertLevel,
-  alertMessage: "Waspada! AI Kami Menemukan 1 Klausul Berisiko",
-  details: [
-    {
-      title: "Denda Keterlambatan",
-      clauses:
-        'Kutipan dari Kontrak: "...keterlambatan kehadiran akan dikenakan sanksi pemotongan gaji sebesar Rp 100.000 per kejadian..."',
-      aiExplanation:
-        "Klausul ini perlu diwaspadai. Tanyakan kepada HR mengenai dasar hukum dan aturan turunan dari kebijakan denda ini.",
-      recommendation:
-        "Pastikan kebijakan denda sesuai dengan peraturan ketenagakerjaan yang berlaku. Tanyakan detail mekanisme perhitungan denda dan batas maksimal yang diperbolehkan.",
-    },
-  ],
-};
+// Interface for backend analysis data
+interface AnalysisIssue {
+  id: string;
+  priority: "critical" | "important" | "optional";
+  category: string;
+  title: string;
+  question: string;
+  contract_excerpt: string;
+  ai_explanation: string;
+  references: any[];
+  compliance_status: string;
+  compliance_details: string;
+  recommendation: string;
+  severity_score: number;
+}
+
+interface BackendAnalysisData {
+  analysis_id: string;
+  chat_id: string;
+  summary: {
+    total_issues: number;
+    critical_count: number;
+    important_count: number;
+    optional_count: number;
+  };
+  issues: AnalysisIssue[];
+  salary_calculation?: any;
+  all_references?: any[];
+  metadata?: any;
+}
 
 export default function ConsultPage() {
   const router = useRouter();
-  const [savedQuestions, setSavedQuestions] = React.useState<any[]>([]);
+  const [savedQuestions, setSavedQuestions] = useState<any[]>([]);
+  const [analysisData, setAnalysisData] = useState<BackendAnalysisData | null>(
+    null
+  );
+  const [chatId, setChatId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load saved questions saat komponen mount
-  React.useEffect(() => {
-    const saved = localStorage.getItem("savedQuestions");
-    if (saved) {
-      setSavedQuestions(JSON.parse(saved));
+  // Load analysis data from sessionStorage
+  useEffect(() => {
+    console.log("[ResultConsul] Loading analysis data from sessionStorage...");
+
+    try {
+      const storedData = sessionStorage.getItem("currentAnalysisData");
+      const storedChatId = sessionStorage.getItem("currentChatId");
+
+      if (!storedData) {
+        console.error(
+          "[ResultConsul] No analysis data found in sessionStorage"
+        );
+        setError(
+          "Tidak ada data analisis. Silakan lakukan analisis terlebih dahulu."
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      const parsedData = JSON.parse(storedData);
+      console.log("[ResultConsul] Loaded analysis data:", parsedData);
+
+      setAnalysisData(parsedData);
+
+      if (parsedData.chat_id) {
+        setChatId(parsedData.chat_id);
+        console.log("[ResultConsul] Chat ID:", parsedData.chat_id);
+      } else if (storedChatId) {
+        setChatId(storedChatId);
+        console.log("[ResultConsul] Chat ID from storage:", storedChatId);
+      }
+
+      // Transform issues to questions format
+      if (parsedData.issues && parsedData.issues.length > 0) {
+        const questions = parsedData.issues.map((issue: AnalysisIssue) => ({
+          id: issue.id,
+          question: issue.question,
+          category: issue.category,
+          priority:
+            issue.priority === "critical"
+              ? "high"
+              : issue.priority === "important"
+              ? "medium"
+              : "low",
+        }));
+        setSavedQuestions(questions);
+        console.log("[ResultConsul] Transformed questions:", questions);
+      }
+
+      setIsLoading(false);
+    } catch (err) {
+      console.error("[ResultConsul] Error loading data:", err);
+      setError("Gagal memuat data analisis. Silakan coba lagi.");
+      setIsLoading(false);
     }
   }, []);
 
-  // Fungsi untuk export PDF (placeholder - akan diimplementasi dengan backend)
+  // Calculate alert level based on issues
+  const getAlertLevel = (): AlertLevel => {
+    if (!analysisData) return "safe";
+
+    const criticalCount = analysisData.summary?.critical_count || 0;
+    const importantCount = analysisData.summary?.important_count || 0;
+
+    if (criticalCount > 0) return "danger";
+    if (importantCount > 0) return "warning";
+    return "safe";
+  };
+
+  // Generate alert message
+  const getAlertMessage = (): string => {
+    if (!analysisData) return "Tidak ada data analisis";
+
+    const criticalCount = analysisData.summary?.critical_count || 0;
+    const importantCount = analysisData.summary?.important_count || 0;
+    const optionalCount = analysisData.summary?.optional_count || 0;
+    const totalIssues = analysisData.summary?.total_issues || 0;
+
+    if (criticalCount > 0) {
+      return `🚨 Peringatan! AI Menemukan ${criticalCount} Klausul Berisiko Tinggi dari ${totalIssues} Total Temuan`;
+    }
+    if (importantCount > 0) {
+      return `⚠️ Waspada! AI Menemukan ${importantCount} Klausul Perlu Perhatian dari ${totalIssues} Total Temuan`;
+    }
+    if (optionalCount > 0) {
+      return `✅ Aman! AI Menemukan ${optionalCount} Saran Perbaikan Minor`;
+    }
+    return "✅ Dokumen Anda Terlihat Baik!";
+  };
+
+  // Export PDF function
   const handleExportPDF = () => {
     console.log("Export to PDF");
-    // TODO: Implement PDF export functionality
     alert("Fitur export PDF akan segera tersedia");
   };
 
-  // Fungsi untuk navigasi ke pertanyaan HR
+  // Navigate to questions HR page
   const handleQuestionHR = () => {
     router.push("/home/resultConsul/questionsHR");
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-emerald-50/40 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-hijautua mx-auto mb-4"></div>
+          <p
+            className="text-hijautua font-semibold"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            Memuat hasil analisis...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !analysisData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-emerald-50/40 flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl mb-4">
+            <p className="font-semibold mb-2">Terjadi Kesalahan</p>
+            <p className="text-sm">{error || "Data analisis tidak tersedia"}</p>
+          </div>
+          <button
+            onClick={() => router.push("/home/uploadBerkas")}
+            className="bg-gradient-hijau text-white px-6 py-3 rounded-xl hover:opacity-90 transition-all"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            Kembali ke Upload
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white lg:bg-gradient-to-br lg:from-gray-50 lg:via-green-50/30 lg:to-emerald-50/40 pb-20 overflow-x-hidden relative">
@@ -158,8 +296,8 @@ export default function ConsultPage() {
               {/* Alert Card */}
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden hover:shadow-2xl transition-all duration-300">
                 <AlertCard
-                  level={dummyAnalysisData.alertLevel}
-                  message={dummyAnalysisData.alertMessage}
+                  level={getAlertLevel()}
+                  message={getAlertMessage()}
                 />
               </div>
 
@@ -171,19 +309,32 @@ export default function ConsultPage() {
                 >
                   Detail Analisis Klausul
                 </h2>
-                {dummyAnalysisData.details.map((detail, index) => (
-                  <div
-                    key={index}
-                    className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.01]"
-                  >
-                    <AnalysisDetailCard
-                      title={detail.title}
-                      clauses={detail.clauses}
-                      aiExplanation={detail.aiExplanation}
-                      recommendation={detail.recommendation}
-                    />
+                {analysisData.issues && analysisData.issues.length > 0 ? (
+                  analysisData.issues.map(
+                    (issue: AnalysisIssue, index: number) => (
+                      <div
+                        key={issue.id || index}
+                        className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.01]"
+                      >
+                        <AnalysisDetailCard
+                          title={issue.title}
+                          clauses={issue.contract_excerpt}
+                          aiExplanation={issue.ai_explanation}
+                          recommendation={issue.recommendation}
+                        />
+                      </div>
+                    )
+                  )
+                ) : (
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-6 text-center">
+                    <p
+                      className="text-gray-600"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                    >
+                      Tidak ada klausul berisiko yang ditemukan
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -383,7 +534,7 @@ export default function ConsultPage() {
                 >
                   Tanyakan apa saja tentang kontrak kerja Anda
                 </p>
-                <ChatBot />
+                <ChatBot chat_id={chatId} />
               </div>
             </div>
           </div>
@@ -466,29 +617,37 @@ export default function ConsultPage() {
               filter: "drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.08))",
             }}
           >
-            <AlertCard
-              level={dummyAnalysisData.alertLevel}
-              message={dummyAnalysisData.alertMessage}
-            />
+            <AlertCard level={getAlertLevel()} message={getAlertMessage()} />
           </div>
 
           {/* Analysis Details with spacing */}
           <div className="mb-6 space-y-4">
-            {dummyAnalysisData.details.map((detail, index) => (
-              <div
-                key={index}
-                style={{
-                  filter: "drop-shadow(0px 4px 16px rgba(33, 56, 19, 0.1))",
-                }}
-              >
-                <AnalysisDetailCard
-                  title={detail.title}
-                  clauses={detail.clauses}
-                  aiExplanation={detail.aiExplanation}
-                  recommendation={detail.recommendation}
-                />
+            {analysisData.issues && analysisData.issues.length > 0 ? (
+              analysisData.issues.map((issue: AnalysisIssue, index: number) => (
+                <div
+                  key={issue.id || index}
+                  style={{
+                    filter: "drop-shadow(0px 4px 16px rgba(33, 56, 19, 0.1))",
+                  }}
+                >
+                  <AnalysisDetailCard
+                    title={issue.title}
+                    clauses={issue.contract_excerpt}
+                    aiExplanation={issue.ai_explanation}
+                    recommendation={issue.recommendation}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="bg-white rounded-2xl shadow-xl p-6 text-center">
+                <p
+                  className="text-gray-600"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  Tidak ada klausul berisiko yang ditemukan
+                </p>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Saved Questions Section */}
@@ -583,7 +742,7 @@ export default function ConsultPage() {
             >
               Tanya AI Assistant
             </h2>
-            <ChatBot />
+            <ChatBot chat_id={chatId} />
           </div>
 
           {/* Action Cards Section with Title */}
@@ -599,40 +758,30 @@ export default function ConsultPage() {
             </h2>
             <div className="flex gap-3">
               {/* Pertanyaan HR Card */}
-              <div
-                className="flex-1"
+              <button
+                onClick={handleQuestionHR}
+                className="flex-1 bg-gradient-hijau text-white p-4 rounded-2xl hover:opacity-90 transition-all"
                 style={{
                   filter: "drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.08))",
+                  fontFamily: "Poppins, sans-serif",
                 }}
               >
-                <GradientCard
-                  title="Pertanyaan HR"
-                  buttonText="Tanyakan"
-                  onClick={handleQuestionHR}
-                  width="100%"
-                  height="152px"
-                  titleSize="18px"
-                  isSmallCard={true}
-                />
-              </div>
+                <h3 className="font-semibold mb-1">Pertanyaan HR</h3>
+                <p className="text-sm text-white/80">Tanyakan</p>
+              </button>
 
               {/* Simpan Hasil Analisis Card */}
-              <div
-                className="flex-1"
+              <button
+                onClick={handleExportPDF}
+                className="flex-1 bg-gradient-hijau text-white p-4 rounded-2xl hover:opacity-90 transition-all"
                 style={{
                   filter: "drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.08))",
+                  fontFamily: "Poppins, sans-serif",
                 }}
               >
-                <GradientCard
-                  title="Simpan Hasil Analisis"
-                  buttonText="Simpan"
-                  onClick={handleExportPDF}
-                  width="100%"
-                  height="152px"
-                  titleSize="18px"
-                  isSmallCard={true}
-                />
-              </div>
+                <h3 className="font-semibold mb-1">Simpan Hasil</h3>
+                <p className="text-sm text-white/80">Simpan</p>
+              </button>
             </div>
           </div>
 

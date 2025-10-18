@@ -14,64 +14,149 @@ export default function ScanningPage() {
   const [fileType, setFileType] = useState<string>("document");
   const [fileName, setFileName] = useState<string>("");
 
-  // For backend integration later
+  // For backend integration
   const [scanningComplete, setScanningComplete] = useState(false);
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
 
   const fullText = "AI Sedang Bekerja...";
   const completeText = "Analisis Selesai!";
+  const errorText = "Terjadi Kesalahan!";
 
-  // Load file from localStorage
+  // Load file from sessionStorage and start analysis
   useEffect(() => {
-    const savedFile = localStorage.getItem("uploadedFile");
-    const savedFileType = localStorage.getItem("uploadedFileType");
-    const savedFileName = localStorage.getItem("uploadedFileName");
+    const savedFile = sessionStorage.getItem("uploadedFile");
+    const savedFileType = sessionStorage.getItem("uploadedFileType");
+    const savedFileName = sessionStorage.getItem("uploadedFileName");
+    const pendingAnalysisStr = sessionStorage.getItem("pendingAnalysis");
 
-    console.log("Loaded from localStorage:", {
+    console.log("Loaded from sessionStorage:", {
       savedFile: savedFile ? `${savedFile.substring(0, 50)}...` : "null",
       savedFileType,
       savedFileName,
-      fileUrlLength: savedFile?.length,
+      pendingAnalysis: pendingAnalysisStr ? "Found" : "Not found",
     });
 
+    // Set file preview
     if (savedFile) {
       setFilePreview(savedFile);
       console.log("File preview set successfully");
-    } else {
-      console.error("No file found in localStorage");
     }
 
     if (savedFileType) {
       setFileType(savedFileType);
-      console.log("File type:", savedFileType);
     }
 
     if (savedFileName) {
       setFileName(savedFileName);
     }
 
-    // TODO: Backend Integration Point
-    // When backend is ready, replace this with actual API call
-    // Example:
-    // const uploadAndAnalyze = async () => {
-    //   const formData = new FormData();
-    //   formData.append('file', fileBlob);
-    //   const response = await fetch('/api/analyze', {
-    //     method: 'POST',
-    //     body: formData
-    //   });
-    //   const data = await response.json();
-    //   setAnalysisData(data);
-    //   setScanningComplete(true);
-    // };
-    // uploadAndAnalyze();
+    // Start analysis if pending data exists
+    if (pendingAnalysisStr) {
+      try {
+        const pendingAnalysis = JSON.parse(pendingAnalysisStr);
+        console.log("Starting analysis with:", pendingAnalysis);
+        startAnalysis(pendingAnalysis);
+      } catch (error) {
+        console.error("Error parsing pendingAnalysis:", error);
+        setAnalysisError("Data analisis tidak valid");
+        setScanningComplete(true);
+      }
+    } else {
+      console.error("No pending analysis data found");
+      setAnalysisError("Tidak ada data untuk dianalisis. Silakan upload file terlebih dahulu.");
+      setScanningComplete(true);
+    }
   }, []);
+
+  // Start analysis using backend API
+  const startAnalysis = async (analysisData: {
+    document_id: string;
+    chat_id: string;
+    file_name: string;
+    analysis_type: string;
+  }) => {
+    try {
+      console.log("Calling /api/analyze with:", analysisData);
+
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          document_id: analysisData.document_id,
+          chat_id: analysisData.chat_id,
+          analysis_type: analysisData.analysis_type,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.message || "Gagal menganalisis dokumen");
+      }
+
+      const result = await response.json();
+      console.log("Analysis result:", result);
+
+      // Store analysis ID for navigation
+      setAnalysisId(result.analysis.id);
+
+      // Transform backend response to match frontend format
+      const transformedData = transformAnalysisData(result.analysis);
+      setAnalysisData(transformedData);
+      setScanningComplete(true);
+
+      // Clear pending analysis data
+      sessionStorage.removeItem("pendingAnalysis");
+
+      // Trigger confetti animation
+      setShowConfetti(true);
+      triggerConfetti();
+    } catch (error) {
+      console.error("Analysis error:", error);
+      setAnalysisError(
+        error instanceof Error ? error.message : "Gagal menganalisis dokumen. Silakan coba lagi."
+      );
+      setScanningComplete(true);
+    }
+  };
+
+  // Transform backend analysis result to frontend format
+  const transformAnalysisData = (analysis: any) => {
+    // Extract data from analysis.result
+    const result = analysis.result || {};
+    
+    return {
+      gajiPokok: result.salary?.base_salary || 0,
+      tunjangan: {
+        kesehatan: result.salary?.allowances?.health || 0,
+        transport: result.salary?.allowances?.transportation || 0,
+        makan: result.salary?.allowances?.meal || 0,
+        ...result.salary?.allowances,
+      },
+      potongan: {
+        bpjs: result.salary?.deductions?.bpjs || 0,
+        pajak: result.salary?.deductions?.tax || 0,
+        ...result.salary?.deductions,
+      },
+      gajiBersih: result.salary?.net_salary || result.salary?.take_home_pay || 0,
+      issues: result.issues || [],
+      compliance: result.compliance || {},
+      summary: result.summary || analysis.summary || "",
+    };
+  };
 
   // Typing animation effect
   useEffect(() => {
     if (scanningComplete) {
-      setTypingText(completeText);
+      if (analysisError) {
+        setTypingText(errorText);
+      } else {
+        setTypingText(completeText);
+      }
       return;
     }
 
@@ -88,7 +173,7 @@ export default function ScanningPage() {
     }, 150);
 
     return () => clearInterval(typingInterval);
-  }, [scanningComplete]);
+  }, [scanningComplete, analysisError]);
 
   // Scanning progress animation
   useEffect(() => {
@@ -105,36 +190,7 @@ export default function ScanningPage() {
     return () => clearInterval(scanningInterval);
   }, []);
 
-  // Simulate scanning completion (For MVP Demo)
-  // TODO: Remove this when backend is integrated
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setScanningComplete(true);
-      console.log("Scanning simulation complete");
-
-      // Mock analysis data (replace with actual backend response)
-      const mockAnalysisData = {
-        gajiPokok: 8000000,
-        tunjangan: {
-          kesehatan: 500000,
-          transport: 300000,
-          makan: 400000,
-        },
-        potongan: {
-          bpjs: 100000,
-          pajak: 400000,
-        },
-        gajiBersih: 8700000,
-      };
-      setAnalysisData(mockAnalysisData);
-
-      // Trigger confetti animation
-      setShowConfetti(true);
-      triggerConfetti();
-    }, 5000); // Changed to 5 seconds
-
-    return () => clearTimeout(timer);
-  }, [router]);
+  // Note: Removed mock simulation - now using real backend API
 
   // Confetti animation function
   const triggerConfetti = () => {
@@ -206,8 +262,8 @@ export default function ScanningPage() {
             {!scanningComplete && <span className="typing-cursor">|</span>}
           </h1>
 
-          {/* Success Icon - appears beside text when complete */}
-          {scanningComplete && (
+          {/* Success/Error Icon - appears beside text when complete */}
+          {scanningComplete && !analysisError && (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="32"
@@ -225,6 +281,27 @@ export default function ScanningPage() {
             >
               <circle cx="12" cy="12" r="10" />
               <polyline points="8 12 11 15 16 9" />
+            </svg>
+          )}
+          {scanningComplete && analysisError && (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#EF4444"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="animate-bounce lg:w-9 lg:h-9"
+              style={{
+                filter: "drop-shadow(0 0 10px rgba(239, 68, 68, 0.8))",
+              }}
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
             </svg>
           )}
         </div>
@@ -578,22 +655,50 @@ export default function ScanningPage() {
       {/* Bottom Action Button - Only show when complete */}
       {scanningComplete && (
         <div className="w-full max-w-sm lg:max-w-md relative z-10 animate-fade-in">
-          <button
-            onClick={() => {
-              // Navigate to results page
-              console.log("Analysis data ready:", analysisData);
-              router.push("/home/resultDocument");
-            }}
-            className="w-full bg-white text-hijautua font-semibold py-4 lg:py-5 lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "16px",
-              boxShadow:
-                "0 0 20px rgba(177, 219, 156, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2)",
-            }}
-          >
-            Lihat Hasil
-          </button>
+          {analysisError ? (
+            // Error state - show retry button
+            <div className="space-y-4">
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+                <p className="text-red-600 text-center text-sm" style={{ fontFamily: "Poppins, sans-serif" }}>
+                  {analysisError}
+                </p>
+              </div>
+              <button
+                onClick={() => router.push("/home/uploadBerkas")}
+                className="w-full bg-white text-red-600 font-semibold py-4 lg:py-5 lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "16px",
+                  boxShadow: "0 0 20px rgba(239, 68, 68, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2)",
+                }}
+              >
+                Coba Lagi
+              </button>
+            </div>
+          ) : (
+            // Success state - show view results button
+            <button
+              onClick={() => {
+                // Store analysis data for results page
+                if (analysisData) {
+                  sessionStorage.setItem("currentAnalysisData", JSON.stringify(analysisData));
+                }
+                if (analysisId) {
+                  sessionStorage.setItem("currentAnalysisId", analysisId);
+                }
+                console.log("Navigating to results with analysis:", analysisData);
+                router.push("/home/resultDocument");
+              }}
+              className="w-full bg-white text-hijautua font-semibold py-4 lg:py-5 lg:text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                fontSize: "16px",
+                boxShadow: "0 0 20px rgba(177, 219, 156, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2)",
+              }}
+            >
+              Lihat Hasil
+            </button>
+          )}
         </div>
       )}
 

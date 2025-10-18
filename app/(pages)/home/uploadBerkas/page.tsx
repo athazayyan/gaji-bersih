@@ -9,12 +9,44 @@ export default function UploadBerkasPage() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [chatSession, setChatSession] = useState<{chat_id: string, expires_at: string} | null>(null);
+
+  // Initialize chat session when component mounts
+  useEffect(() => {
+    initializeChatSession();
+  }, []);
+
+  const initializeChatSession = async () => {
+    try {
+      const response = await fetch("/api/chat/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ttl_minutes: 90 }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create chat session");
+      }
+
+      const data = await response.json();
+      setChatSession(data.session);
+      console.log("Chat session created:", data.session);
+    } catch (error) {
+      console.error("Error initializing chat session:", error);
+      setUploadError("Gagal membuat sesi chat. Silakan refresh halaman.");
+    }
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
       generatePreview(file);
+      setUploadError(null);
     }
   };
 
@@ -68,18 +100,68 @@ export default function UploadBerkasPage() {
     }
   };
 
-  const handleAnalysis = () => {
-    if (selectedFile) {
-      // Save file preview to localStorage for scanning page (if available)
-      if (filePreview) {
-        localStorage.setItem("uploadedFile", filePreview);
+  const handleAnalysis = async () => {
+    if (!selectedFile) {
+      setUploadError("Silakan pilih file terlebih dahulu");
+      return;
+    }
+
+    if (!chatSession) {
+      setUploadError("Sesi chat belum siap. Silakan tunggu atau refresh halaman.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      // Upload file to backend
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("chat_id", chatSession.chat_id);
+      formData.append("doc_type", "contract"); // Untuk penawaran kerja
+      formData.append("save_to_my_docs", "false"); // Ephemeral document
+
+      console.log("Uploading file:", selectedFile.name);
+
+      const uploadResponse = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || "Gagal mengunggah file");
       }
-      localStorage.setItem("uploadedFileType", getFileType(selectedFile));
-      localStorage.setItem("uploadedFileName", selectedFile.name);
+
+      const uploadData = await uploadResponse.json();
+      console.log("Upload successful:", uploadData);
+
+      // Store data for scanning page
+      const analysisData = {
+        document_id: uploadData.document.id,
+        chat_id: chatSession.chat_id,
+        file_name: uploadData.document.file_name,
+        analysis_type: "contract",
+      };
+
+      // Save to sessionStorage (more secure than localStorage)
+      sessionStorage.setItem("pendingAnalysis", JSON.stringify(analysisData));
+      
+      // Save preview data for scanning page
+      if (filePreview) {
+        sessionStorage.setItem("uploadedFile", filePreview);
+      }
+      sessionStorage.setItem("uploadedFileType", getFileType(selectedFile));
+      sessionStorage.setItem("uploadedFileName", selectedFile.name);
 
       // Navigate to scanning page
-      console.log("Starting analysis for:", selectedFile.name);
+      console.log("Navigating to scanning page with document_id:", uploadData.document.id);
       router.push("/home/scanning");
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError(error instanceof Error ? error.message : "Gagal mengunggah file. Silakan coba lagi.");
+      setIsUploading(false);
     }
   };
 
@@ -378,13 +460,27 @@ export default function UploadBerkasPage() {
               </div>
             )}
 
+            {/* Error Message */}
+            {uploadError && (
+              <div 
+                className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl"
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                }}
+              >
+                <p className="text-red-600 text-sm text-center">
+                  {uploadError}
+                </p>
+              </div>
+            )}
+
             {/* Action Button */}
             <div className="mt-8 mb-8">
               <button
                 onClick={handleAnalysis}
-                disabled={!selectedFile}
-                className={`w-full bg-gradient-hijau text-white font-medium py-4 rounded-full transition-all duration-300 ${
-                  selectedFile
+                disabled={!selectedFile || isUploading || !chatSession}
+                className={`w-full bg-gradient-hijau text-white font-medium py-4 rounded-full transition-all duration-300 flex items-center justify-center ${
+                  selectedFile && !isUploading && chatSession
                     ? "hover:opacity-90 hover:scale-105"
                     : "opacity-50 cursor-not-allowed"
                 }`}
@@ -394,7 +490,33 @@ export default function UploadBerkasPage() {
                   height: "56px",
                 }}
               >
-                Lanjutkan Analisis
+                {isUploading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Mengunggah...
+                  </>
+                ) : (
+                  "Lanjutkan Analisis"
+                )}
               </button>
             </div>
           </div>
@@ -721,16 +843,61 @@ export default function UploadBerkasPage() {
                         </button>
                       </div>
 
+                      {/* Error Message - Desktop */}
+                      {uploadError && (
+                        <div 
+                          className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl"
+                          style={{
+                            fontFamily: "Poppins, sans-serif",
+                          }}
+                        >
+                          <p className="text-red-600 text-sm text-center">
+                            {uploadError}
+                          </p>
+                        </div>
+                      )}
+
                       {/* Analyze Button */}
                       <button
                         onClick={handleAnalysis}
-                        className="bg-gradient-hijau text-white font-semibold py-4 rounded-xl hover:opacity-90 hover:shadow-lg transition-all"
+                        disabled={isUploading || !chatSession}
+                        className={`bg-gradient-hijau text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center ${
+                          isUploading || !chatSession
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:opacity-90 hover:shadow-lg"
+                        }`}
                         style={{
                           fontFamily: "Poppins, sans-serif",
                           fontSize: "18px",
                         }}
                       >
-                        Lanjutkan Analisis →
+                        {isUploading ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            Mengunggah...
+                          </>
+                        ) : (
+                          "Lanjutkan Analisis →"
+                        )}
                       </button>
                     </div>
                   ) : (

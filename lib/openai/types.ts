@@ -276,6 +276,32 @@ export interface AnalysisResult {
   }
 }
 
+/**
+ * Simplified markdown analysis result for alternative endpoint
+ */
+export interface AnalysisMarkdownResult {
+  analysis_id: string
+  chat_id: string
+  document: {
+    id: string
+    name: string
+    type: string
+    uploaded_at: string
+  }
+  markdown_content: string
+  metadata: {
+    analyzed_at: string
+    model_used: string
+    search_methods_used: string[]
+    tokens_used: {
+      prompt_tokens: number
+      completion_tokens: number
+      total_tokens: number
+    }
+    processing_time_ms: number
+  }
+}
+
 // ============================================================================
 // Chat Types (for POST /api/chat)
 // ============================================================================
